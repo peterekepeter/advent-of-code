@@ -1,0 +1,20 @@
+
+test = function(case, index){
+	local in = 0;
+	local out = 0;
+    local fun = 0;
+	local result2 = 0;
+    local time = 0;
+	in = get(case, "in");
+	out = get(case, "out");
+    time = clock();
+	result2 = solution(in);
+    time = clock() - time;
+	if (equals(result2, out)){
+		view("case", index, "passed with", result2, "(" + string(time/1000000) + "ms)");
+	} else {
+		view("case", index, "failed with", result2, "while expecting", out);
+	};
+};
+
+apply(test, cases);

@@ -1,0 +1,47 @@
+
+map = function(data, fun, context){
+    local result = 0;
+    result = array(length(data));
+	loop(local i = 0, i < length(data), i = i + 1){
+		set(result, i, fun(get(data, i),i,context));
+	};
+    return result;
+};
+
+apply = function(fun, data, context){
+	loop(local i = 0, i < length(data), i = i + 1){
+		fun(get(data, i),i,context);
+	};
+};
+
+filter = function(data, fun, context){
+    local count = 0;
+    local result = 0;
+    local item = 0;
+    result = array(length(data));
+	loop(local i = 0, i < length(data), i = i + 1){
+        item = get(data,i);
+        if (fun(item)){
+            set(result, count, item);
+            count = count + 1;
+        };
+	};
+    return head(result, 3);
+};
+
+range = function(start, count, init){
+    if (void == count){
+        count = start;
+        start = 0;
+    }
+    local data = 0;
+    data = array(count);
+	loop(local i = 0, i < count, i = i + 1){
+        set(data, i, start + i);
+	};
+    return data;
+};
+
+equals = function(a, b){
+    return a == b;
+};

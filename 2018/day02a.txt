@@ -1,0 +1,27 @@
+
+zero = function(){ return 0; };
+
+reduce = function(code, _, context){
+    set(context, code, get(context, code) + 1);
+};
+
+two_or_three = function(x){
+    return (x == 2);
+};
+
+solution = function(input) {
+    local occurence = 0;
+    occurence = map(array(256), zero);
+    local str = "abac";
+    apply(reduce, str, occurence);
+    filtered = filter(occurence, two_or_three);
+    view(filtered);
+	return 0;
+};
+
+cases = [
+	{
+		in: ["abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab"],
+		out: 12
+	}
+];
