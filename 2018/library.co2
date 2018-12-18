@@ -21,12 +21,25 @@ filter = function(data, fun, context){
     result = array(length(data));
 	loop(local i = 0, i < length(data), i = i + 1){
         item = get(data,i);
-        if (fun(item)){
+        if (fun(item, context)){
             set(result, count, item);
             count = count + 1;
         };
 	};
     return head(result, count);
+};
+
+find = function(data, fun, context){
+    local count = 0;
+    local result = 0;
+    local item = 0;
+	loop(local i = 0, i < length(data), i = i + 1){
+        item = get(data,i);
+        if (fun(item, context)){
+            return item;
+        };
+	};
+    return void;
 };
 
 range = function(start, count){
