@@ -51,3 +51,39 @@ _deprecated_subseq = subseq;
 subseq = function(seq, index, count){
     return _deprecated_subseq(seq, count, index);
 };
+
+identity = function(x) {
+    return x;
+};
+
+false = bit(0);
+true = bit(1);
+
+strsplit = function(str, chars, keepEmpty){
+    local result = 0;
+    local count = 0;
+    local pos = 0;
+    if (void == keepEmpty){
+        keepEmpty = false;
+    }
+    result = array(length(str));
+    loop(local i=0, i<length(str), i=i+1){
+        local value = 0;
+        value = get(str, i);
+        loop(local j=0, j<length(chars), j=j+1){
+            if (value == get(chars,j)){
+                if (keepEmpty + (i-pos > 0))
+                {
+                    set(result, count, subseq(str, pos, i-pos));
+                    count = count + 1;
+                }
+                pos = i+1;
+            };
+        };
+    };
+    if (pos<length(str)){
+        set(result, count, subseq(str, pos, length(str)-pos));
+        count = count + 1;
+    }
+    return head(result,count);
+};
