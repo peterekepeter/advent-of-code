@@ -29,7 +29,7 @@ filter = function(data, fun, context){
     return head(result, count);
 };
 
-range = function(start, count, init){
+range = function(start, count){
     if (void == count){
         count = start;
         start = 0;
@@ -44,4 +44,10 @@ range = function(start, count, init){
 
 equals = function(a, b){
     return a == b;
+};
+
+_deprecated_subseq = subseq;
+
+subseq = function(seq, index, count){
+    return _deprecated_subseq(seq, count, index);
 };
