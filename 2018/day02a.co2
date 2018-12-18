@@ -1,0 +1,56 @@
+
+zero = function(){ return 0; };
+
+reduce = function(code, _, context){
+    set(context, code, get(context, code) + 1);
+};
+
+two_or_three = function(x){
+    return (x == 2) + (x == 3);
+};
+
+count_occurences = function(str){
+    local occurence = 0;
+    occurence = map(array(256), zero);
+    apply(reduce, str, occurence);
+
+    local result = 0;
+    result = array(3);
+    set(result,0,str);
+    set(result,1,0);
+    set(result,2,0);
+
+    loop(local i=0, i<length(occurence), i=i+1) {
+        local value = 0;
+        value = get(occurence, i);
+        if (value == 2){
+            set(result,1,1);
+        } else if (value == 3){
+            set(result,2,1);
+        };;
+    };
+	return result;
+};
+
+sum = function(case, _, output){
+    set(output, 0, get(output, 0) + get(case,1));
+    set(output, 1, get(output, 1) + get(case,2));
+};
+
+solution = function(input) {
+    local sumResult = 0;
+    sumResult = map(array(2), zero);
+    apply(sum, map(input, count_occurences), sumResult);
+    return get(sumResult, 0) * get(sumResult, 1);
+};
+
+cases = [
+	{
+		in: ["abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab"],
+		out: 12
+	},
+    {
+        in: ["prtkqyluibmtcwqaezjmhgfndx","prtkqylusbsmcwvaezjmhgfndt","prgkqyluibsocwvamzjmhgkndx","prjkqyluibsocwvahzjmhgfnsx","prtkqylcibsocwvzezjohgfndx","prtkqyluiksocwziezjmhgfndx","prikqyluiksocwvaezjmkgfndx","prtkgyluibsocwvwezjehgfndx","prtkqyluiysocwvaezjghxfndx","prtkqwluibsoxwvaezjmhgfhdx","prtkqylgibsocwvabzjmhzfndx","prtknyltibnocwvaezjmhgfndx","prdkqyluibrocwvaezjmhgnndx","prtwqyluibsoctvcezjmhgfndx","mrtkqyluibgocwvakzjmhgfndx","prtkqaouibsocwvaezjmhwfndx","prtkqyluihjocwvaezjmhgfpdx","prtkqyluikfxcwvaezjmhgfndx","prtkqybuixsocwvaczjmhgfndx","pvtkayluibsocwxaezjmhgfndx","grtkqgluibsocdvaezjmhgfndx","prlkqyluibsochvaezjmhgzndx","prtkqylxibsocmvaezjmhgfkdx","prtkqyluibsqctvaezjmpgfndx","putkqyluibsocqvaezjmhgfndw","prtjqyluibsiclvaezjmhgfndx","prtkqylvpvsocwvaezjmhgfndx","prnkqyluibsocwvaezjmhefsdx","prtktyluibsocwvaezjkhgrndx","prtkqyluibcovwvaezjthgfndx","prtkqcluibiocwvaezjmhggndx","prtkqyluihsocwveezjmhgfydx","prtklyluibsocwqaszjmhgfndx","prtkqyluibsocwvaezjmfznndx","prtkjyluijsocwvaeejmhgfndx","prtkqtluibsonwvaexjmhgfndx","prtkqyluinsocwbaezjmjgfndx","prtkqyluibslckvaezjmhgyndx","prtkqyluibsodwlpezjmhgfndx","prtkquluibsfcwvaezjhhgfndx","prtkqyluhbsocweaezsmhgfndx","prrkqyluinsocxvaezjmhgfndx","prtkqyluibsoswvaezjmhgyqdx","prtkqbluibdocwvlezjmhgfndx","prtkqyfuibsocpvaezjmhgfnwx","prtkqlluibsqjwvaezjmhgfndx","prtkqyluibrocwvaehjmjgfndx","prtkqyluibsoowvaezgmhgendx","wrtjqyluibsocwvaezfmhgfndx","prtvqyluhbsocwvaezjmtgfndx","prtkqyllibspcwvaezjmkgfndx","pqtzqyeuibsocwvaezjmhgfndx","prtkqyluibsolpvaezjmegfndx","przkayguibsocwvaezjmhgfndx","prtkqyluidsocwvaezjmyufndx","prtuqyluibsocwvaezjmfgfnkx","prtkqwluibsrcwvaezjchgfndx","prtkqyluibsotwhaozjmhgfndx","erwkqylhibsocwvaezjmhgfndx","prtkqyluibsocwvgezjmkgfedx","prskqyluiesocwvaezjmggfndx","prtkqylmitsocwvaezjmhgfnox","prtkqyluinnocwvaezjmhgfkdx","prtktyluibsokwvaezjmhgfcdx","prtkqyluibsomwvakvjmhgfndx","prtkqyltibloawvaezjmhgfndx","prtkqyluibxocwvaezgmhgqndx","prtkqyluibskcmvaezjmhgfngx","artkqylubbsotwvaezjmhgfndx","prtkqyluibzocwvhezjmhgfnbx","prskqkluibsocwvaezjmhgfjdx","prtkqyluibwocwvaezjkhglndx","prukqyluissocwvzezjmhgfndx","puhkqyluibsocwvaezjmhgfsdx","qrtkqyluibsocwvaeujmhgfndd","prtkqyluibsoctvaezjmagfnda","prtkquluibsocwkaezjmhgfqdx","prtkqyluubswcwvaezjmhvfndx","prfkqyluibsocwvaemrmhgfndx","pmtkqyluibpocwvaezjmhggndx","prtkqvluibiocwvaezjqhgfndx","prtkgypuibsocwvaezcmhgfndx","prtpqyquibsovwvaezjmhgfndx","prtwqyluiasocwvaexjmhgfndx","mrtzqyluibbocwvaezjmhgfndx","prtkqyluibsocwmaegwmhgfndx","prtkqyluibvncwvaqzjmhgfndx","prtkqyluiusocwvaezjmhmfbgx","prtkqyljibvocwvaezjehgfndx","prtkqyloibsopavaezjmhgfndx","prckqyakibsocwvaezjmhgfndx","prtkqyluibsdcwvaezjmngfddx","prekqylupbsocwvaezemhgfndx","hrtkqyluibhocwvaezjmhgfnde","prmkqyluibsocwvaezzfhgfndx","prtkqyluiccfcwvaezjmhgfndx","pdtkqyluxbsocwvaezjmhgendx","prokqyluibsocwvuezjmsgfndx","prtkqyluibsacwvaezjyhgfndv","prtkqmluibsocavaezjmhgfndc","prtkqyluibsocwvmezjmhgtnqx","prtkqytuibiocyvaezjmhgfndx","pktkqyiuibsocwvwezjmhgfndx","grtrqyluibsocwvaezjmhgfbdx","prtkqylsibjocwvaezjmhgfnyx","prtkqyhutbsocwvaexjmhgfndx","prtknyluibsocmvaezumhgfndx","prtkwyluibsocwvahzjmhgpndx","prtkqywuibsolhvaezjmhgfndx","prtkcyluibsoccvaezjthgfndx","prtkqyrdibsocwvaezjbhgfndx","prtkqyhuqbsocwvaezjmhgfxdx","pytkqyluibsocwvagzjmhgfndv","prtkqyliibsocwvaexwmhgfndx","prtkqyluibshcwvaeljphgfndx","prtkqyluibsocwvaerjzhbfndx","prtkqyduibsocwvaezvmhgfnzx","drtkqylhibsocwvaezjmhmfndx","prtkqyluibsocwvaezamfvfndx","brtkqyluqbsocwvaezjmhgpndx","prtkqyiuibsocwvuezjmhgfngx","urtkqyluibsocqvaeljmhgfndx","prtkqyluikaocwvaezjmhgfjdx","prqkqzouibsocwvaezjmhgfndx","prtkqyluibsocxvaezjmhgfnxv","prlkqyluibsoxwvaeijmhgfndx","prthuyluibsocwvaezjmhgfnhx","potkqyluizsocwvaezjmhifndx","fstkqyduibsocwvaezjmhgfndx","prtkqxluibsocwvaezjmhgffdm","prtkqylpibsozwvaezmmhgfndx","prxkqylbibsocwvaezjphgfndx","srtkqyluibsicnvaezjmhgfndx","prtktyluibsocwvaezjvhgfnax","pctkqyluxbsocwvaezwmhgfndx","prtkqylusbsoclvaezsmhgfndx","pwtkqyluibsocrvaezjmggfndx","prtkqyluibswcwraezjmhgfndd","prtkqyluibtocwiaezjmhgfnax","prtuqyluibsocwvajzjmngfndx","pwtkqyluibsocwvaerjmogfndx","petkqexuibsocwvaezjmhgfndx","pztkqyluibsocwvaerqmhgfndx","prtkqyluobsocwvaezjmapfndx","prtkqyluiinocwvaeljmhgfndx","prtkqyluibsoowvxezjmhgfnnx","lrtkqyluibsocwvfezjmhgfndc","prtkqyluibokcwvahzjmhgfndx","prtkqmlufbsocwvaegjmhgfndx","prtkqylribsocwvanzjmhgfnda","prtkqyluibspxwvaezkmhgfndx","prtiqyluibsbcwvaezjmhgfntx","prikqzluinsocwvaezjmhgfndx","prtkqnldibsocwvaezjmhxfndx","prtkqyluixsocsvaezjmhwfndx","hrtkqyluibsocwvaezjhhgfodx","prtkqyluibsrcwvaezjmhpfwdx","prtkqyluibsocwyaezjmhgffdk","prtkqyluidsocwvalmjmhgfndx","prukquluabsocwvaezjmhgfndx","prckqyluinsmcwvaezjmhgfndx","prbkqymuibsocwvaezjmhgfndc","prtkfylaibsocwvaezjmkgfndx","zrtkqyluibsocwvrbzjmhgfndx","crtkqyluibsocwvaejjmkgfndx","prttqyluibsocyvaezymhgfndx","prtkqylugbsocwvaezjxhgfmdx","prtkqyluibsocwdlezjmhgfnbx","prtkqjluibsocwvaozjhhgfndx","prtcjyluibsocwbaezjmhgfndx","rrtkqyluiblocwvaezjmhgundx","prtkkyluibsocwfaezjmhgfnyx","prtkqyuuibsocwvaezjmhgfogx","prtkyyluvbsocwvaezjmhgfnox","prpkqyluibyocwvaezjmhggndx","pdtkqyluibdocwvaezjmhgfndy","prtklysuibsocwvaezjmhgfnwx","prtkqyluabsouwvaekjmhgfndx","phtkqyluibsocwvaezjmhgfnxt","prtkqyxuibsocwvaezjmhpfnqx","prtkqyluibsodwsaezdmhgfndx","prtkbyluibsohwvaezjmhgfndr","xrtkqylhibsocwvtezjmhgfndx","prtkqyluvysocwvaezbmhgfndx","prtkqieuibsocwvaeojmhgfndx","pctkqyluibsocwvanzjmhgfnux","vrtkqyluibsozwvaezjmhgandx","prtkqyluiusocwvaezjmhmfngx","prbkqyluibsockvaxzjmhgfndx","prtkqyluibsonwvaczjmhgfndi","prtkqyluiblocwvaezjmhgfnau","prtkqyluibsocwvafzuchgfndx","prdkqyluiysocwvaezjmhgfnax","prnkqyouibsocwvaezjmhgfndq","mrtkqgluibsocwvpezjmhgfndx","pvtkqyluibsocwvaczjmhgnndx","trtkqwluibsohwvaezjmhgfndx","prmkqyluibsofwvaezjmhgfrdx","prtyqyluibpdcwvaezjmhgfndx","ertkqylulbsocwvaezjmhgfnax","prtkqyluibsacwvaeijmhgfndf","prtkqyluibyocwvapzjmhgpndx","potkqyluibgocwvaezjmhzfndx","prtkqyluibsocwyaezxmhgfnpx","prtkqkjuibsncwvaezjmhgfndx","prtqqyluibsocwlaezjmhgkndx","prtkxyluibnocwvaezjmhgkndx","prtkqyluiosocwvapzjmxgfndx","prtkqylumbsocwvyezimhgfndx","prukqyluibsocwvyezjmhgindx","prtkqylbibstcwvaezjxhgfndx","pctkqyuuibsocwvaezjuhgfndx","vrtkqyluibsocwvaezjmhgfnll","urtkqyluibsopwvaezjphgfndx","prtkceluibsocwvaepjmhgfndx","prwkxyluibsocwvaezjmhgfnzx","prtkqyluitsocwvaezqzhgfndx","prtkqkauibsorwvaezjmhgfndx","prtkqyluibsocwvaezfmftfndx","prtkiybuibsocwvaezjkhgfndx","prtkzyluibsocwgaezjmvgfndx","prtkqyluibsocwvaezjmhgqnxg","prtkqyluimsocwvauzjwhgfndx","prtkqyluibsacwgaezjmhgfndd","pwtkuyluibsccwvaezjmhgfndx","prtkqyluibsoawvaezjmvgfnlx","prtkqyluabsocwwaezjmhgftdx","patkqylnibsocwvaezjmhgfnox","prtkqyluibsocwlaxzkmhgfndx","pbtkqpluibsfcwvaezjmhgfndx","prtkqyluibsoywsaezjmhgxndx","prtkqyluibfocwvaezjyhgfhdx","pltbqylcibsocwvaezjmhgfndx","prtkdyluiisocwvvezjmhgfndx","prtkqkxuibsokwvaezjmhgfndx","prtkqyluibsoawvaezzmhgfndm","petkqyluibsgcwvaezjmhgfndu","prtkqyluibsoyxvaezjmlgfndx","prtkqyluibxocwvaezgmhnfndx","prtkikluibsocwvwezjmhgfndx","prbkqyluibsocwvaezjhhgfnux","prtkqylufbsxcwvaezjmhgfnfx","prtkqyluibsdcdvaezjmhgxndx","potkiyluibsocwvaezjmhkfndx","prtkqyluiosocsvhezjmhgfndx","prtkqyluibsocqbaezomhgfndx","prtihyluibsocwvaeujmhgfndx","prtuquruibsocwvaezjmhgfndx","prtkqyloibsocwvaeztmhifndx","ertuqyluibsocwvaeajmhgfndx"],
+        out: 6723
+    }
+];
