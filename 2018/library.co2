@@ -117,3 +117,21 @@ sort = function(data, criteria){
     };
     return data;
 };
+
+groupby = function(data, fun, context){
+    local len = length(data);
+    local result = object();
+    loop(local i=0, i<len, i=i+1){
+        local item = get(data, i);
+        local key = fun(item, context);
+        local list_item = array(1);
+        set(list_item,0,item);
+        local list = get(result, key);
+        if (list == void){
+            set(result, key, list_item);
+        } else {
+            set(result, key, list + list_item);
+        }
+    };
+    return result;
+};

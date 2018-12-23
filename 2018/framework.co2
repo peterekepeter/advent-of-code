@@ -6,19 +6,11 @@ test = function(case, index){
 	local out = get(case, "out");
     local time = clock();
 	local result2 = solution(in);
-	local chalk = function(rest){
-		local x="0";
-		set(x,0,27);
-		return x+rest;
-	};
-	local red = chalk("[0;31m");
-	local green = chalk("[0;32m");
-	local reset = chalk("[0m");
     time = clock() - time;
 	if (equals(result2, out)){
-		view(green + "  case", index, "passed with", result2, "(" + string(time/1000000) + "ms)", reset);
+		view("case", index, "passed with", result2, "(" + string(time/1000000) + "ms)");
 	} else {
-		view(red + "  case", index, "failed with", result2, "while expecting", out, reset);
+		view("case", index, "failed with", result2, "while expecting", out);
 	};
 };
 
