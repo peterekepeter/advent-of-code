@@ -1,9 +1,8 @@
 
 solution = function(input) {
 	local sum = 0;
-    local history = 0;
+    local history = object();
     local count = 0;
-    history = object();
     set(history, "0", 1);
     local i = 0;
 	loop {

@@ -1,0 +1,39 @@
+
+main = function(){
+    loop (local day=1, day<=3, day=day+1){
+        runDay(day);
+    };
+};
+
+runDay = function(day){
+    runDayPart(day, bit(0));
+    runDayPart(day, bit(1));
+};
+
+runDayPart = function(day, part){
+    local file = fileDay(day, part);
+    system("echo " + gray + file + reset);;
+    system("carbon library.co2 " + fileDay(day, part) + " framework.co2");
+};
+
+fileDay = function(number, secondPart){
+    local partString = "a";
+    if (secondPart) { partString = "b" };
+    local extension = ".co2";
+    local prefix = "day";
+    return prefix + twoLetter(number) + partString + extension;
+};
+
+twoLetter = function (number){
+    if (number>9) { return string(number) }
+    if (number<9) { return "0"+string(number) }
+};
+
+chalk = function(rest){
+    local x="0";
+    set(x,0,27);
+    return x+rest;
+};
+gray = chalk("[1;30m");
+reset = chalk("[0m");
+main();

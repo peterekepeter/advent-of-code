@@ -1,7 +1,6 @@
 
 map = function(data, fun, context){
-    local result = 0;
-    result = array(length(data));
+    local result = array(length(data));
 	loop(local i = 0, i < length(data), i = i + 1){
 		set(result, i, fun(get(data, i),i,context));
 	};
@@ -9,18 +8,17 @@ map = function(data, fun, context){
 };
 
 apply = function(fun, data, context){
-	loop(local i = 0, i < length(data), i = i + 1){
+    local len = length(data);
+	loop(local i = 0, i < len, i = i + 1){
 		fun(get(data, i),i,context);
 	};
 };
 
 filter = function(data, fun, context){
     local count = 0;
-    local result = 0;
-    local item = 0;
-    result = array(length(data));
+    local result = array(length(data));
 	loop(local i = 0, i < length(data), i = i + 1){
-        item = get(data,i);
+        local item = get(data,i);
         if (fun(item, context)){
             set(result, count, item);
             count = count + 1;
@@ -30,11 +28,8 @@ filter = function(data, fun, context){
 };
 
 find = function(data, fun, context){
-    local count = 0;
-    local result = 0;
-    local item = 0;
 	loop(local i = 0, i < length(data), i = i + 1){
-        item = get(data,i);
+        local item = get(data,i);
         if (fun(item, context)){
             return item;
         };
@@ -47,8 +42,7 @@ range = function(start, count){
         count = start;
         start = 0;
     }
-    local data = 0;
-    data = array(count);
+    local data = array(count);
 	loop(local i = 0, i < count, i = i + 1){
         set(data, i, start + i);
 	};
@@ -99,4 +93,27 @@ strsplit = function(str, chars, keepEmpty){
         count = count + 1;
     }
     return head(result,count);
+};
+
+sort = function(data, criteria){
+    if (criteria == void) { criteria = function(a,b){ return a<b } };
+    local len = length(data);
+    data = head(data,len);
+    loop (local i=0, i<len, i=i+1){
+        local ith = get(data, i);
+        local minindex = i;
+        local min = ith;
+        loop (local j=i+1, j<len, j=j+1){
+            local jth = get(data,j);
+            if (criteria(jth, min)){
+                min = jth;
+                minindex = j;
+            }
+        };
+        if (minindex != i){
+            set(data, i, min);
+            set(data, minindex, ith);
+        }
+    };
+    return data;
 };
