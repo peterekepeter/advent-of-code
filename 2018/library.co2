@@ -135,3 +135,13 @@ groupby = function(data, fun, context){
     };
     return result;
 };
+
+distinct = function(data, fun, context){
+    if (fun == void){
+        fun = function(x){return string(x)};
+    }
+    local grouped = groupby(data, fun);
+    return map(properties(grouped), (function(key){
+        get(get(grouped,key),0);
+    }));
+};
