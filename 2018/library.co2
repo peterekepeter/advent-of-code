@@ -152,3 +152,15 @@ distinct = function(data, fun, context){
     }));
 };
 
+foreach = function(container, fun, context){
+    local keys = void;
+    if (type(container) == "object"){
+        keys = properties(container);
+    } else {
+        keys = range(length(container));
+    };
+    loop(local i=0, i<length(keys), i=i+1){
+        local key = get(keys, i);
+        fun(key, get(container, key), context);
+    }
+};
