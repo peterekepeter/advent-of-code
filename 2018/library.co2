@@ -118,6 +118,10 @@ sort = function(data, criteria){
     return data;
 };
 
+order = function(data, fieldSelector){
+    return sort(data, (function(a,b){return fieldSelector(a) < fieldSelector(b)}));
+};
+
 groupby = function(data, fun, context){
     local len = length(data);
     local result = object();
@@ -136,6 +140,8 @@ groupby = function(data, fun, context){
     return result;
 };
 
+group = groupby;
+
 distinct = function(data, fun, context){
     if (fun == void){
         fun = function(x){return string(x)};
@@ -145,3 +151,4 @@ distinct = function(data, fun, context){
         get(get(grouped,key),0);
     }));
 };
+
