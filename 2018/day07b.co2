@@ -86,7 +86,6 @@ solution = function(input) {
 			}
 		}
 		time = time + 1;
-		view(time, finish_order);
 		if (find(list, incomplete) == void){
 			break;
 		}
@@ -242,6 +241,6 @@ cases = [
 				"Step H must be finished before step I can begin."
 			]
 		},
-		out:0
+		out:898
 	}
 ];
