@@ -1,36 +1,44 @@
 
 parse = function(input, pos){
-	local children = get(input, pos);
-	local metadata = get(input, pos+1);
+	local children_count = get(input, pos);
+	local metadata_count = get(input, pos+1);
 	pos = pos + 2;
+	local children = array(children_count);
 	local metabuffer = [];
-	loop(local i=0, i<children, i=i+1){
+	loop(local i=0, i<children_count, i=i+1){
 		local child = parse(input, pos);
 		pos = get(child, "pos");
-		metabuffer = metabuffer + get(child, "meta");
+		set(children, i, child);
 	}
-	metabuffer = subseq(input, pos, metadata) + metabuffer;
-	pos = pos + metadata;
+	local sum = 0;
+	loop(local i=pos, i<pos+metadata_count, i=i+1){
+		if (children_count == 0){
+			sum = sum + get(input,i);
+		} else {
+			local index = get(input,i);
+			if (index > 0){
+				if (index <= children_count){
+					sum = sum + get(get(children, index - 1), "value");
+				}
+			}
+		}
+	}
+	pos = pos + metadata_count;
 	local result = object();
 	set(result, "pos", pos);
-	set(result, "meta", metabuffer);
+	set(result, "value", sum);
 	return result;
 };
 
 solution = function(input) {
 	local result = parse(input, 0);
-	local data = get(result, "meta");
-	local sum = 0;
-	loop(local i=0, i<length(data), i=i+1){
-		sum = sum + get(data, i);
-	}
-	return sum;
+	return get(result, "value");
 };
 
 cases = [
 	{
 		in: [2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2],
-		out: 138
+		out: 66
 	},
 	{
 		out:48155,
