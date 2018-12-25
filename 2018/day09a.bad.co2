@@ -1,0 +1,93 @@
+
+solution = function(input) {
+	local parsed = parse(input);
+	local result = solve(parsed);
+	return result;
+};
+
+parse = function(str){
+	local split = strsplit(str, " ");
+	local result = object();
+	set(result, "players", integer(get(split, 0)));
+	set(result, "last", integer(get(split, 6)));
+	return result;
+};
+
+multiple_of_23 = x -> x/23*23==x;
+
+solve = function(problem){
+	local players = get(problem, "players");
+	local highest = get(problem, "last");
+	local current_player = 0;
+	local selected_marble = 0;
+	local score = map(range(players), v -> 0);
+	local board = array(highest + 1);
+	local marbles_on_board = 1;
+	set(board, 0, 0);
+	current_player = 0;
+	loop (local marble=1, marble<=highest, marble=marble+1){
+		if (multiple_of_23(marble)){
+			local increase = marble;
+			selected_marble = selected_marble - 7;
+			if (marbles_on_board==0){
+				selected_marble = 0;
+			}
+			loop(selected_marble<0) {
+				selected_marble = selected_marble + marbles_on_board;
+			}
+			increase = increase + get(board, selected_marble);
+			loop(local i=selected_marble, i<marbles_on_board, i=i+1){
+				set(board, i, get(board, i+1));
+			}
+			marbles_on_board = marbles_on_board - 1;
+			set(score, current_player, get(score, current_player) + increase);
+		}
+		else 
+		{
+			local first = selected_marble + 1;
+			local second = selected_marble + 2;
+			if (marbles_on_board == 0){ first = second = 0 };
+			if (first >= marbles_on_board) { first = first - marbles_on_board };
+			if (second >= marbles_on_board) { second = second - marbles_on_board };
+			if (first == second){
+				set(board, marbles_on_board, marble);
+				selected_marble = marbles_on_board;
+				marbles_on_board = marbles_on_board + 1;
+			} else if (first == marbles_on_board - 1){
+				set(board, marbles_on_board, marble);
+				selected_marble = marbles_on_board;
+				marbles_on_board = marbles_on_board + 1;
+			} else {
+				loop (local j=marbles_on_board, j>second, j=j-1){
+					set(board, j, get(board, j-1));
+				}
+				set(board, second, marble);
+				selected_marble = second;
+				marbles_on_board = marbles_on_board + 1;
+			};;;
+		}
+		current_player = current_player + 1;
+		if (current_player >= players) { current_player = current_player - players };
+	};
+	local max = get(score, 0);
+	loop(local i=1, i<length(score), i=i+1){
+		local value = get(score, i);
+		if (value > max){
+			max = value;
+		}
+	}
+	return max;
+};
+
+cases = [
+    { in: "9 players; last marble is worth 22 points", out: 0 },
+    { in: "9 players; last marble is worth 23 points", out: 32 },
+    { in: "9 players; last marble is worth 25 points", out: 32 },
+    { in: "17 players; last marble is worth 1104 points", out: 2764 }, 
+    { in: "10 players; last marble is worth 1618 points", out: 8317 },
+    { in: "30 players; last marble is worth 5807 points", out: 37305 },
+    { in: "21 players; last marble is worth 6111 points", out: 54718 },
+    { in: "13 players; last marble is worth 7999 points", out: 146373 },
+	{ in: "476 players; last marble is worth 71657 points", out: 386018 },
+	{ in: "476 players; last marble is worth 7165700 points", out: 386018 } 
+];

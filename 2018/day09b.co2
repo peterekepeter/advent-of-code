@@ -1,0 +1,137 @@
+
+solution = function(input) {
+	local parsed = parse(input);
+	local result = solve(parsed);
+	return result;
+};
+
+parse = function(str){
+	local split = strsplit(str, " ");
+	local result = object();
+	set(result, "players", integer(get(split, 0)));
+	set(result, "last", integer(get(split, 6)));
+	return result;
+};
+
+linked_list = function(capacity){
+	local memory = array(capacity);
+	local selected = -1;
+	local alocator = 0;
+	local linked_list = object();
+	set(linked_list, "memory", memory);
+	set(linked_list, "selected", selected);
+	set(linked_list, "alocator", alocator);
+	return linked_list;
+};
+
+insert = function(linked_list, value){
+	local memory = get(linked_list, "memory");
+	local selected = get(linked_list, "selected");
+	local alocator = get(linked_list, "alocator");
+
+	local node = object();
+	set(node, "value", value);
+	set(node, "id", alocator);
+	if (selected == -1){
+		set(node, "next", alocator);
+		set(node, "prev", alocator);
+		set(memory, alocator, node);
+		selected = alocator;
+		alocator = alocator + 1;
+	}
+	else {
+		local selected_node = get(memory, selected);
+		local next_node = get(memory, get(selected_node, "next"));
+		set(node, "next", get(selected_node, "next"));
+		set(node, "prev", get(next_node, "prev"));
+		set(memory, alocator, node);
+		set(selected_node, "next", alocator);
+		set(next_node, "prev", alocator);
+		selected = alocator;
+		alocator = alocator + 1;
+	}
+	set(linked_list, "selected", selected);
+	set(linked_list, "alocator", alocator);
+};
+
+seek = function(linked_list, count){
+	if (count == 0) { return }
+
+	local memory = get(linked_list, "memory");
+	local selected = get(linked_list, "selected");
+	local alocator = get(linked_list, "alocator");
+
+	loop(count > 0){
+		local node = get(memory, selected);
+		selected = get(node, "next");
+		count = count - 1;
+	}
+	loop(count < 0){
+		local node = get(memory, selected);
+		selected = get(node, "prev");
+		count = count + 1;
+	}
+	set(linked_list, "selected", selected);
+};
+
+remove = function(linked_list){
+	local selected = get(linked_list, "selected");
+	if (selected == -1){
+		return void;
+	}
+	local memory = get(linked_list, "memory");
+	local node = get(memory, selected);
+	local node_next = get(node, "next");
+	local node_prev = get(node, "prev");
+	local prev = get(memory, node_prev);
+	local next = get(memory, node_next);
+	set(prev, "next", node_next);
+	set(next, "prev", node_prev);
+	set(memory, selected, void);
+	selected = node_next;
+	set(linked_list, "selected", selected);
+	return node;
+};
+
+multiple_of_23 = x -> x/23*23==x;
+
+solve = function(problem){
+	local players = get(problem, "players");
+	local highest = get(problem, "last");
+	local current_player = 0;
+	local selected_marble = 0;
+	local score = map(range(players), v -> 0);
+	local board = linked_list(highest+4);
+	local marbles_on_board = 1;
+	insert(board, 0);
+	current_player = 0;
+	loop (local marble=1, marble<=highest, marble=marble+1){
+		if (multiple_of_23(marble)){
+			local increase = marble;
+			seek(board, -7);
+			local removed = remove(board);
+			increase = increase + get(removed, "value");
+			marbles_on_board = marbles_on_board - 1;
+			set(score, current_player, get(score, current_player) + increase);
+		}
+		else 
+		{
+			seek(board, +1);
+			insert(board, marble);
+		}
+		current_player = current_player + 1;
+		if (current_player >= players) { current_player = current_player - players };
+	};
+	local max = get(score, 0);
+	loop(local i=1, i<length(score), i=i+1){
+		local value = get(score, i);
+		if (value > max){
+			max = value;
+		}
+	}
+	return max;
+};
+
+cases = [
+	{ in: "476 players; last marble is worth 7165700 points", out: 386018 } 
+];
