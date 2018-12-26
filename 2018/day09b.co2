@@ -18,78 +18,77 @@ linked_list = function(capacity){
 	local selected = -1;
 	local alocator = 0;
 	local linked_list = object();
-	set(linked_list, "memory", memory);
-	set(linked_list, "selected", selected);
-	set(linked_list, "alocator", alocator);
+	set(linked_list, "m", memory);
+	set(linked_list, "s", selected);
+	set(linked_list, "a", alocator);
 	return linked_list;
 };
 
 insert = function(linked_list, value){
-	local memory = get(linked_list, "memory");
-	local selected = get(linked_list, "selected");
-	local alocator = get(linked_list, "alocator");
+	local memory = get(linked_list, "m");
+	local selected = get(linked_list, "s");
+	local alocator = get(linked_list, "a");
 
 	local node = object();
-	set(node, "value", value);
-	set(node, "id", alocator);
+	set(node, "v", value);
 	if (selected == -1){
-		set(node, "next", alocator);
-		set(node, "prev", alocator);
+		set(node, "n", alocator);
+		set(node, "p", alocator);
 		set(memory, alocator, node);
 		selected = alocator;
 		alocator = alocator + 1;
 	}
 	else {
 		local selected_node = get(memory, selected);
-		local next_node = get(memory, get(selected_node, "next"));
-		set(node, "next", get(selected_node, "next"));
-		set(node, "prev", get(next_node, "prev"));
+		local next_node = get(memory, get(selected_node, "n"));
+		set(node, "n", get(selected_node, "n"));
+		set(node, "p", get(next_node, "p"));
 		set(memory, alocator, node);
-		set(selected_node, "next", alocator);
-		set(next_node, "prev", alocator);
+		set(selected_node, "n", alocator);
+		set(next_node, "p", alocator);
 		selected = alocator;
 		alocator = alocator + 1;
 	}
-	set(linked_list, "selected", selected);
-	set(linked_list, "alocator", alocator);
+	set(linked_list, "s", selected);
+	set(linked_list, "a", alocator);
 };
 
 seek = function(linked_list, count){
 	if (count == 0) { return }
 
-	local memory = get(linked_list, "memory");
-	local selected = get(linked_list, "selected");
-	local alocator = get(linked_list, "alocator");
+	local memory = get(linked_list, "m");
+	local selected = get(linked_list, "s");
+	local alocator = get(linked_list, "a");
 
 	loop(count > 0){
 		local node = get(memory, selected);
-		selected = get(node, "next");
+		selected = get(node, "n");
 		count = count - 1;
 	}
 	loop(count < 0){
 		local node = get(memory, selected);
-		selected = get(node, "prev");
+		selected = get(node, "p");
 		count = count + 1;
 	}
-	set(linked_list, "selected", selected);
+	set(linked_list, "s", selected);
 };
 
 remove = function(linked_list){
-	local selected = get(linked_list, "selected");
+	local selected = get(linked_list, "s");
 	if (selected == -1){
 		return void;
 	}
-	local memory = get(linked_list, "memory");
+	local memory = get(linked_list, "m");
 	local node = get(memory, selected);
-	local node_next = get(node, "next");
-	local node_prev = get(node, "prev");
+	local node_next = get(node, "n");
+	local node_prev = get(node, "p");
 	local prev = get(memory, node_prev);
 	local next = get(memory, node_next);
-	set(prev, "next", node_next);
-	set(next, "prev", node_prev);
+	set(prev, "n", node_next);
+	set(next, "p", node_prev);
 	set(memory, selected, void);
 	selected = node_next;
-	set(linked_list, "selected", selected);
+	set(linked_list, "s", selected);
 	return node;
 };
 
@@ -103,6 +102,7 @@ solve = function(problem){
 	local score = map(range(players), v -> 0);
 	local board = linked_list(highest+4);
 	local marbles_on_board = 1;
+	local milestone = 0;
 	insert(board, 0);
 	current_player = 0;
 	loop (local marble=1, marble<=highest, marble=marble+1){
@@ -110,7 +110,7 @@ solve = function(problem){
 			local increase = marble;
 			seek(board, -7);
 			local removed = remove(board);
-			increase = increase + get(removed, "value");
+			increase = increase + get(removed, "v");
 			marbles_on_board = marbles_on_board - 1;
 			set(score, current_player, get(score, current_player) + increase);
 		}
@@ -133,5 +133,7 @@ solve = function(problem){
 };
 
 cases = [
-	{ in: "476 players; last marble is worth 7165700 points", out: 386018 } 
+    { in: "9 players; last marble is worth 25 points", out: 32 },
+    { in: "17 players; last marble is worth 1104 points", out: 2764 }, 
+	{ in: "476 players; last marble is worth 7165700 points", out: 3085518618 } 
 ];
