@@ -26,7 +26,7 @@ fileDay = function(number, secondPart){
 
 twoLetter = function (number){
     if (number>9) { return string(number) }
-    if (number<9) { return "0"+string(number) }
+    else { return "0"+string(number) }
 };
 
 chalk = function(rest){

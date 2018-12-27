@@ -98,31 +98,6 @@ coherence = function (dataset){
 	local width = max_x - min_x;
 	local height = max_y - min_y;
 	return -width-height;
-	local projection_x = repeat([0], width);
-	local projection_y = repeat([0], height);
-	local dataset_length = length(dataset);
-	loop(local i=0, i<dataset_length, i=i+1){
-		local item = get(dataset, i);
-		local px = get(item, 0);
-		local py = get(item, 1);
-		local x = px - min_x;
-		local y = py - min_y;
-		set(projection_x, x, get(projection_x, x) + 1);
-		set(projection_y, y, get(projection_y, y) + 1);
-	}
-	local max = function(data){
-		local max_value = 0;
-		loop(local i=0, i<length(data), i=i+1){
-			local value = get(data, i);
-			if (max_value < value){
-				max_value = value;
-			};
-		};
-		return max_value;
-	};
-	local max_x = max(projection_x);
-	local max_y = max(projection_y);
-	return max_x + max_y;
 };
 
 solution = function(input) {
