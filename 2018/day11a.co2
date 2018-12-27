@@ -1,0 +1,68 @@
+
+cell_level = function(cell_x, cell_y, grid_serial_number) {
+	local rack_id = cell_x + 10;
+	local initial_power_level = rack_id * cell_y;
+	local power_level = initial_power_level + grid_serial_number;
+	power_level = power_level * rack_id;
+	local level = power_level / 100;
+	level = level - (level/10*10);
+	level = level - 5;
+	return level;
+};
+
+solution = function(input) {
+	local grid_serial_number = input;
+	local cells = array(300 * 300);
+	loop(local y=0, y<300, y=y+1){
+		loop(local x=0, x<300, x=x+1){
+			set(cells, y*300+x, cell_level(x,y,grid_serial_number));
+		}
+	}
+
+	local best_x = 0;
+	local best_y = 0;
+	local best_value = 0;
+
+	loop(local y=0, y<298, y=y+1){
+		local ybase_1 = y*300;
+		local ybase_2 = (y+1)*300;
+		local ybase_3 = (y+2)*300;
+		local prev_1 = get(cells, ybase_1) + get(cells, ybase_2) + get(cells, ybase_3);
+		local prev_2 = get(cells, ybase_1+1) + get(cells, ybase_2+1) + get(cells, ybase_3+1);
+
+		loop(local x=2, x<298, x=x+1){
+			local current = get(cells, ybase_1+x) + get(cells, ybase_2+x) + get(cells, ybase_3+x);
+			sum = prev_1 + prev_2 + current;
+			if(sum > best_value){
+				best_value = sum;
+				best_x = x - 2;
+				best_y = y;
+			}
+			prev_2 = prev_1;
+			prev_1 = current;
+		}
+	}
+	local best = array(2);
+	set(best, 0, best_x);
+	set(best, 1, best_y);
+	return best;
+};
+
+equals = function(a,b){
+	return (get(a,0) == get(b,0)) * (get(a,1) == get(b,1));
+};
+
+cases = [
+	{
+		in: 18,
+		out: [33,45]
+	},
+	{
+		in: 42,
+		out: [21,61]
+	},
+	{
+		in: 7672,
+		out: [22,18]
+	}
+];
