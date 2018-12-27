@@ -97,7 +97,7 @@ coherence = function (dataset){
 	local max_y = get(bounds, 3) + adjust + 1;
 	local width = max_x - min_x;
 	local height = max_y - min_y;
-	if (width + height > 100) return -width-height;
+	return -width-height;
 	local projection_x = repeat([0], width);
 	local projection_y = repeat([0], height);
 	local dataset_length = length(dataset);

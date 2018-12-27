@@ -39,42 +39,6 @@ boundaries = function(dataset){
 	return result;
 };
 
-render = function(dataset){
-	local bounds = boundaries(dataset);
-	local adjust = 2;
-	local min_x = get(bounds, 0) - adjust;
-	local min_y = get(bounds, 1) - adjust;
-	local max_x = get(bounds, 2) + adjust + 1;
-	local max_y = get(bounds, 3) + adjust + 1;
-	local width = max_x - min_x;
-	local width_with_newline = width + 1;
-	local height = max_y - min_y;
-	local buffer = " "*(width_with_newline*height);
-	local dataset_length = length(dataset);
-
-	local char_position = get("#",0);
-	local char_velocity = get(".", 0);
-	local char_newline = get("\n",0);
-
-	loop(local i=0, i<dataset_length, i=i+1){
-		local item = get(dataset, i);
-		local px = get(item, 0);
-		local py = get(item, 1);
-		local sx = get(item, 2);
-		local sy = get(item, 3);
-		local position_offset = (py-min_y) * width_with_newline + (px-min_x);
-		local velocity_offset = (py+sy-min_y) * width_with_newline + (px+sx-min_x);
-		if (get(buffer, velocity_offset) != char_position){
-			set(buffer, velocity_offset, char_velocity);
-		}
-		set(buffer, position_offset, char_position);
-	}
-	loop(local i=0, i<height, i=i+1){
-		set(buffer, width + width_with_newline * i, char_newline);
-	}
-	return buffer;
-};
-
 simulate = function(dataset, delta_time){
 	local dataset_length = length(dataset);
 	loop(local i=0, i<dataset_length, i=i+1){
@@ -97,32 +61,7 @@ coherence = function (dataset){
 	local max_y = get(bounds, 3) + adjust + 1;
 	local width = max_x - min_x;
 	local height = max_y - min_y;
-	if (width + height > 100) return -width-height;
-	local projection_x = repeat([0], width);
-	local projection_y = repeat([0], height);
-	local dataset_length = length(dataset);
-	loop(local i=0, i<dataset_length, i=i+1){
-		local item = get(dataset, i);
-		local px = get(item, 0);
-		local py = get(item, 1);
-		local x = px - min_x;
-		local y = py - min_y;
-		set(projection_x, x, get(projection_x, x) + 1);
-		set(projection_y, y, get(projection_y, y) + 1);
-	}
-	local max = function(data){
-		local max_value = 0;
-		loop(local i=0, i<length(data), i=i+1){
-			local value = get(data, i);
-			if (max_value < value){
-				max_value = value;
-			};
-		};
-		return max_value;
-	};
-	local max_x = max(projection_x);
-	local max_y = max(projection_y);
-	return max_x + max_y;
+	return -width-height;
 };
 
 solution = function(input) {
@@ -171,7 +110,6 @@ solution = function(input) {
 		step = step+1;
 	}
 	simulate(dataset, max_coherence_t - t);
-	local result = render(dataset);
 	return max_coherence_t;
 };
 
