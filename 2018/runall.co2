@@ -1,6 +1,6 @@
 
 main = function(){
-    loop (local day=1, day<=8, day=day+1){
+    loop (local day=9, day<=10, day=day+1){
         runDay(day);
     };
 };
@@ -26,7 +26,7 @@ fileDay = function(number, secondPart){
 
 twoLetter = function (number){
     if (number>9) { return string(number) }
-    if (number<9) { return "0"+string(number) }
+    else { return "0"+string(number) }
 };
 
 chalk = function(rest){
