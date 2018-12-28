@@ -1,0 +1,82 @@
+
+solution = function(input) {
+	local char_zero = get("0",0);
+	local pattern = map(input, x -> x - char_zero);
+	local capacity = 100000000 + 10;
+	local recipes = " "*capacity; 
+	local recipe_count = 2;
+	set(recipes, 0, 3);
+	set(recipes, 1, 7);
+	local first_elf = 0;
+	local second_elf = 1;
+	local match_count = 0;
+	local match_length = length(input);
+	local pattern_first_value = get(pattern, 0);
+
+	local check_match = function(value){
+		if (get(pattern, match_count) == value){
+			match_count = match_count+1;
+		} else {
+			match_count = 0;
+			if (pattern_first_value == value){
+				match_count = 1;
+			}        
+		}
+		return match_count >= match_length;
+	};
+	check_match(3);
+	check_match(7);
+	loop(recipe_count < capacity){
+		local first = get(recipes, first_elf);
+		local second = get(recipes, second_elf);
+		local sum = first + second;
+		if (sum < 10){
+			if (check_match(sum)){ break; }
+			set(recipes, recipe_count, sum);
+			recipe_count = recipe_count + 1;
+		} else {
+			local tens = sum / 10;
+			local ones = sum - tens * 10;
+
+			if (check_match(tens)){ break; }
+			set(recipes, recipe_count, tens);
+			recipe_count = recipe_count + 1;
+
+			if (check_match(ones)){ break; }
+			set(recipes, recipe_count, ones);
+			recipe_count = recipe_count + 1;
+		}
+		first_elf = first_elf + first + 1;
+		second_elf = second_elf + second + 1;
+		loop(first_elf >= recipe_count){ first_elf = first_elf - recipe_count }
+		loop(second_elf >= recipe_count){ second_elf = second_elf - recipe_count }
+	}
+	if (match_count < match_length){
+		return -1;
+	};
+	local result = recipe_count - match_length + 1;
+	return result;
+};
+
+cases = [
+	{
+		in: "01245",
+		out: 5
+	},
+	{
+		in: "51589",
+		out: 9
+	},
+	{
+		in: "92510",
+		out: 18
+	},
+	{
+		in: "59414",
+		out: 2018
+	},
+	{
+		in: "320851",
+		out: 20316365
+	}
+];
