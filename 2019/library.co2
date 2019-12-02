@@ -1,0 +1,166 @@
+
+map = function(data, fun, context){
+    local result = array(length(data));
+	loop(local i = 0, i < length(data), i = i + 1){
+		set(result, i, fun(get(data, i),i,context));
+	};
+    return result;
+};
+
+apply = function(fun, data, context){
+    local len = length(data);
+	loop(local i = 0, i < len, i = i + 1){
+		fun(get(data, i),i,context);
+	};
+};
+
+filter = function(data, fun, context){
+    local count = 0;
+    local result = array(length(data));
+	loop(local i = 0, i < length(data), i = i + 1){
+        local item = get(data,i);
+        if (fun(item, context)){
+            set(result, count, item);
+            count = count + 1;
+        };
+	};
+    return head(result, count);
+};
+
+find = function(data, fun, context){
+	loop(local i = 0, i < length(data), i = i + 1){
+        local item = get(data,i);
+        if (fun(item, context)){
+            return item;
+        };
+	};
+    return void;
+};
+
+range = function(start, count){
+    if (void == count){
+        count = start;
+        start = 0;
+    }
+    local data = array(count);
+	loop(local i = 0, i < count, i = i + 1){
+        set(data, i, start + i);
+	};
+    return data;
+};
+
+equals = function(a, b){
+    return a == b;
+};
+
+_deprecated_subseq = subseq;
+
+subseq = function(seq, index, count){
+    return _deprecated_subseq(seq, count, index);
+};
+
+identity = function(x) {
+    return x;
+};
+
+false = bit(0);
+true = bit(1);
+
+strsplit = function(str, chars, keepEmpty){
+    local result = 0;
+    local count = 0;
+    local pos = 0;
+    if (void == keepEmpty){
+        keepEmpty = false;
+    }
+    result = array(length(str));
+    loop(local i=0, i<length(str), i=i+1){
+        local value = 0;
+        value = get(str, i);
+        loop(local j=0, j<length(chars), j=j+1){
+            if (value == get(chars,j)){
+                if (keepEmpty + (i-pos > 0))
+                {
+                    set(result, count, subseq(str, pos, i-pos));
+                    count = count + 1;
+                }
+                pos = i+1;
+            };
+        };
+    };
+    if (pos<length(str)){
+        set(result, count, subseq(str, pos, length(str)-pos));
+        count = count + 1;
+    }
+    return head(result,count);
+};
+
+sort = function(data, criteria){
+    if (criteria == void) { criteria = function(a,b){ return a<b } };
+    local len = length(data);
+    data = head(data,len);
+    loop (local i=0, i<len, i=i+1){
+        local ith = get(data, i);
+        local minindex = i;
+        local min = ith;
+        loop (local j=i+1, j<len, j=j+1){
+            local jth = get(data,j);
+            if (criteria(jth, min)){
+                min = jth;
+                minindex = j;
+            }
+        };
+        if (minindex != i){
+            set(data, i, min);
+            set(data, minindex, ith);
+        }
+    };
+    return data;
+};
+
+order = function(data, fieldSelector){
+    return sort(data, (function(a,b){return fieldSelector(a) < fieldSelector(b)}));
+};
+
+groupby = function(data, fun, context){
+    local len = length(data);
+    local result = object();
+    loop(local i=0, i<len, i=i+1){
+        local item = get(data, i);
+        local key = fun(item, context);
+        local list_item = array(1);
+        set(list_item,0,item);
+        local list = get(result, key);
+        if (list == void){
+            set(result, key, list_item);
+        } else {
+            set(result, key, list + list_item);
+        }
+    };
+    return result;
+};
+
+group = groupby;
+
+distinct = function(data, fun, context){
+    if (fun == void){
+        fun = function(x){return string(x)};
+    }
+    local grouped = groupby(data, fun);
+    return map(properties(grouped), (function(key){
+        get(get(grouped,key),0);
+    }));
+};
+
+foreach = function(container, fun, context){
+    local keys = void;
+    if (type(container) == "object"){
+        keys = properties(container);
+    } else {
+        keys = range(length(container));
+    };
+    loop(local i=0, i<length(keys), i=i+1){
+        local key = get(keys, i);
+        fun(key, get(container, key), context);
+    }
+};
