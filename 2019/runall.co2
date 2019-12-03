@@ -1,6 +1,6 @@
 
 main = function(){
-    loop (local day=1, day<=10, day=day+1){
+    loop (local day=1, day<=3, day=day+1){
         runDay(day);
     };
 };
