@@ -1,0 +1,48 @@
+
+
+solution = function(input){
+    local min = get(input, 0);
+    local max = get(input, 1);
+    return length(filter(range(min,max - min + 1), criteria));
+};
+
+
+criteria = function(number){
+    local prev = 10;
+    local double = false;
+    loop (number > 0){
+        local divided = number / 10;
+        local digit = number - divided * 10;
+
+        if (prev < digit){
+            return false;
+        }
+
+        if (prev == digit){
+            double = true;
+        }
+
+        prev = digit;
+        number = divided;
+    };
+    return double;
+};
+
+cases = [
+	{
+		in: [111111, 111111],
+		out: 1
+	},
+	{
+		in: [223450, 223450],
+		out: 0
+	},
+	{
+		in: [123789, 123789],
+		out: 0
+	},
+    {
+		in: [271973, 785961],
+		out: 925
+	}
+];

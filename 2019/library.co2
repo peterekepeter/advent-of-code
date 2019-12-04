@@ -27,6 +27,15 @@ filter = function(data, fun, context){
     return head(result, count);
 };
 
+reduce = function(data, fun, initial, context){
+    local value = initial;
+    loop(local i = 0, i < length(data), i = i + 1){
+        local item = get(data,i);
+        value = fun(item, value, context);
+    };
+    return value;
+};
+
 find = function(data, fun, context){
 	loop(local i = 0, i < length(data), i = i + 1){
         local item = get(data,i);
@@ -59,9 +68,7 @@ subseq = function(seq, index, count){
     return _deprecated_subseq(seq, count, index);
 };
 
-identity = function(x) {
-    return x;
-};
+identity = x -> x;
 
 false = bit(0);
 true = bit(1);
