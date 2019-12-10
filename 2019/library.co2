@@ -171,3 +171,106 @@ foreach = function(container, fun, context){
         fun(key, get(container, key), context);
     }
 };
+
+intcode = function(memory, input){
+		
+    local input_ptr = 0;
+    local output = array(256);
+    local output_ptr = 0;
+
+	local opcode = 0;
+    local instr_length = 0;
+
+    local halt = false;
+	local i_ptr = 0;
+	local param_mode = array(3);
+    local param_raw = array(3);
+    local param_value = array(3);
+
+    local instr_length_table = [1,4,4,2,2];
+    local instr_length_table_length = length(instr_length_table);
+
+	local decode_opcode = function (instruction){
+		local d2 = instruction/100;
+		local d3 = instruction/1000;
+		local d4 = instruction/10000;
+		opcode = instruction - d2*100;
+		set(param_mode, 0, d2 - d3*10);
+		set(param_mode, 1, d3 - d4*10);
+		set(param_mode, 2, d4);
+        if (opcode < instr_length_table_length){
+            instr_length = get(instr_length_table, opcode);
+        } else {
+            instr_length = 1;
+        };
+	};
+
+
+    local decode_parameter = function(memory, i_ptr, index){
+        if (instr_length <= index+1) return true;
+        local value = get(memory, i_ptr + 1 + index);
+        set(param_raw, index, value);
+        if (get(param_mode, index) == 1){
+            set(param_value, index, value);
+        } else {
+            set(param_value, index, get(memory, value));
+        }
+        return false;
+    };
+
+    local decode_parameters = function (memory, i_ptr){
+        if (decode_parameter(memory, i_ptr, 0)) return;
+        if (decode_parameter(memory, i_ptr, 1)) return;
+        if (decode_parameter(memory, i_ptr, 2)) return;
+    };
+	
+    local invalid_instruction = function(opcode){
+        view("invalid instruction opcode", opcode);
+        exit(1);
+    };
+
+    local i_vector = map(range(0,100), opcode -> _ -> invalid_instruction(opcode));
+
+    local instruction_arithmetic = function(arithmetic_function){
+        local a = get(param_value, 0);
+        local b = get(param_value, 1);
+        local result = arithmetic_function(a,b);
+        set(param_value, 2, result);
+        set(memory, get(param_raw,2), result);
+    };
+
+    local arithmetic_add = function(a,b) { return a + b; };
+    local arithmetic_mul = function(a,b) { return a * b; };
+
+    local instruction_read_input = function(){
+        local value =  get(input, input_ptr);
+        set(memory, get(param_raw, 0), value);
+        input_ptr = input_ptr + 1;
+    };
+
+    local instruction_write_output = function(){
+        local value = get(param_value, 0);
+        set(output, output_ptr, value);
+        output_ptr = output_ptr + 1;
+    };
+
+    local instruction_halt = function(){
+        halt = true;
+    };
+
+    set(i_vector, 1, _ -> instruction_arithmetic(arithmetic_add));
+    set(i_vector, 2, _ -> instruction_arithmetic(arithmetic_mul));
+    set(i_vector, 3, instruction_read_input);
+    set(i_vector, 4, instruction_write_output);
+    set(i_vector, 99, instruction_halt);
+
+    loop (halt == false) {
+		local raw_opcode = get(memory, i_ptr);
+        decode_opcode(raw_opcode);
+        decode_parameters(memory, i_ptr);
+        local execute_instruction = get(i_vector, opcode);
+        execute_instruction();
+        i_ptr = i_ptr + instr_length;
+	}
+    return subseq(output, 0, output_ptr);
+};

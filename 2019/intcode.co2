@@ -1,0 +1,37 @@
+
+solution = function(in){
+    return intcode(get(in, "memory"), get(in, "stdin"));
+};
+
+equals = function(a,b){
+    local len_a = length(a);
+    local len_b = length(b);
+    if (len_a != len_b){
+        return false;
+    }
+    loop (local i=0, i<len_a, i=i+1){
+        if (get(a,i) != get (b,i)){
+            return false;
+        }
+    }
+    return true;
+};
+
+cases = [
+	{
+		in: { memory: [104, 50, 99], stdin: [] },
+		out: [50]
+	},
+	{
+		in: { memory: [3, 0, 4, 0, 99], stdin: [42] },
+		out: [42]
+	},
+	{
+		in: { memory: [1101, 3, 4, 0, 4, 0, 99], stdin: [] },
+		out: [7]
+	},
+	{
+		in: { memory: [1102, 3, 4, 0, 4, 0, 99], stdin: [] },
+		out: [12]
+	},
+];
