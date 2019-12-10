@@ -18,22 +18,22 @@ equals = function(a,b){
 };
 
 cases = [
-	{
-		in: { memory: [104, 50, 99], stdin: [] },
-		out: [50]
-	},
-	{
-		in: { memory: [3, 0, 4, 0, 99], stdin: [42] },
-		out: [42]
-	},
-	{
-		in: { memory: [1101, 3, 4, 0, 4, 0, 99], stdin: [] },
-		out: [7]
-	},
-	{
-		in: { memory: [1102, 3, 4, 0, 4, 0, 99], stdin: [] },
-		out: [12]
-	},
+    {
+        in: { memory: [104, 50, 99], stdin: [] },
+        out: [50]
+    },
+    {
+        in: { memory: [3, 0, 4, 0, 99], stdin: [42] },
+        out: [42]
+    },
+    {
+        in: { memory: [1101, 3, 4, 0, 4, 0, 99], stdin: [] },
+        out: [7]
+    },
+    {
+        in: { memory: [1102, 3, 4, 0, 4, 0, 99], stdin: [] },
+        out: [12]
+    },
     {
         in: { memory: [3,9,8,9,10,9,4,9,99,-1,8], stdin: [8] },
         out: [1]

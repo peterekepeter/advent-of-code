@@ -1,29 +1,29 @@
 
 map = function(data, fun, context){
     local result = array(length(data));
-	loop(local i = 0, i < length(data), i = i + 1){
-		set(result, i, fun(get(data, i),i,context));
-	};
+    loop(local i = 0, i < length(data), i = i + 1){
+        set(result, i, fun(get(data, i),i,context));
+    };
     return result;
 };
 
 apply = function(fun, data, context){
     local len = length(data);
-	loop(local i = 0, i < len, i = i + 1){
-		fun(get(data, i),i,context);
-	};
+    loop(local i = 0, i < len, i = i + 1){
+        fun(get(data, i),i,context);
+    };
 };
 
 filter = function(data, fun, context){
     local count = 0;
     local result = array(length(data));
-	loop(local i = 0, i < length(data), i = i + 1){
+    loop(local i = 0, i < length(data), i = i + 1){
         local item = get(data,i);
         if (fun(item, context)){
             set(result, count, item);
             count = count + 1;
         };
-	};
+    };
     return head(result, count);
 };
 
@@ -37,12 +37,12 @@ reduce = function(data, fun, initial, context){
 };
 
 find = function(data, fun, context){
-	loop(local i = 0, i < length(data), i = i + 1){
+    loop(local i = 0, i < length(data), i = i + 1){
         local item = get(data,i);
         if (fun(item, context)){
             return item;
         };
-	};
+    };
     return void;
 };
 
@@ -52,9 +52,9 @@ range = function(start, count){
         start = 0;
     }
     local data = array(count);
-	loop(local i = 0, i < count, i = i + 1){
+    loop(local i = 0, i < count, i = i + 1){
         set(data, i, start + i);
-	};
+    };
     return data;
 };
 
@@ -173,37 +173,37 @@ foreach = function(container, fun, context){
 };
 
 intcode = function(memory, input){
-		
+        
     local input_ptr = 0;
     local output = array(256);
     local output_ptr = 0;
 
-	local opcode = 0;
+    local opcode = 0;
     local instr_length = 0;
 
     local halt = false;
-	local i_ptr = 0;
-	local param_mode = array(3);
+    local i_ptr = 0;
+    local param_mode = array(3);
     local param_raw = array(3);
     local param_value = array(3);
 
     local instr_length_table = [1,4,4,2,2,3,3,4,4];
     local instr_length_table_length = length(instr_length_table);
 
-	local decode_opcode = function (instruction){
-		local d2 = instruction/100;
-		local d3 = instruction/1000;
-		local d4 = instruction/10000;
-		opcode = instruction - d2*100;
-		set(param_mode, 0, d2 - d3*10);
-		set(param_mode, 1, d3 - d4*10);
-		set(param_mode, 2, d4);
+    local decode_opcode = function (instruction){
+        local d2 = instruction/100;
+        local d3 = instruction/1000;
+        local d4 = instruction/10000;
+        opcode = instruction - d2*100;
+        set(param_mode, 0, d2 - d3*10);
+        set(param_mode, 1, d3 - d4*10);
+        set(param_mode, 2, d4);
         if (opcode < instr_length_table_length){
             instr_length = get(instr_length_table, opcode);
         } else {
             instr_length = 1;
         };
-	};
+    };
 
 
     local decode_parameter = function(memory, i_ptr, index){
@@ -223,7 +223,7 @@ intcode = function(memory, input){
         if (decode_parameter(memory, i_ptr, 1)) return;
         if (decode_parameter(memory, i_ptr, 2)) return;
     };
-	
+    
     local invalid_instruction = function(opcode){
         view("invalid instruction opcode", opcode);
         exit(1);
@@ -279,13 +279,13 @@ intcode = function(memory, input){
     set(i_vector, 99, instruction_halt);
 
     loop (halt == false) {
-		local raw_opcode = get(memory, i_ptr);
+        local raw_opcode = get(memory, i_ptr);
         decode_opcode(raw_opcode);
         decode_parameters(memory, i_ptr);
         i_ptr = i_ptr + instr_length;
         local execute_instruction = get(i_vector, opcode);
         execute_instruction();
-	}
+    }
     local result = subseq(output, 0, output_ptr);
     return result;
 };
