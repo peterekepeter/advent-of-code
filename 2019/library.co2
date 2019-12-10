@@ -187,7 +187,7 @@ intcode = function(memory, input){
     local param_raw = array(3);
     local param_value = array(3);
 
-    local instr_length_table = [1,4,4,2,2];
+    local instr_length_table = [1,4,4,2,2,3,3,4,4];
     local instr_length_table_length = length(instr_length_table);
 
 	local decode_opcode = function (instruction){
@@ -241,6 +241,8 @@ intcode = function(memory, input){
 
     local arithmetic_add = function(a,b) { return a + b; };
     local arithmetic_mul = function(a,b) { return a * b; };
+    local arithmetic_less = function(a,b) { if (a < b) return 1; return 0; };
+    local arithmetic_equals = function(a,b) { if (a == b) return 1; return 0; };
 
     local instruction_read_input = function(){
         local value =  get(input, input_ptr);
@@ -254,6 +256,14 @@ intcode = function(memory, input){
         output_ptr = output_ptr + 1;
     };
 
+    local instruction_jump = function(condition_function){
+        local a = get(param_value, 0);
+        local b = get(param_value, 1);
+        if (condition_function(a)){
+            i_ptr = b;
+        }
+    };
+
     local instruction_halt = function(){
         halt = true;
     };
@@ -262,15 +272,20 @@ intcode = function(memory, input){
     set(i_vector, 2, _ -> instruction_arithmetic(arithmetic_mul));
     set(i_vector, 3, instruction_read_input);
     set(i_vector, 4, instruction_write_output);
+    set(i_vector, 5, _ -> instruction_jump(x -> x != 0));
+    set(i_vector, 6, _ -> instruction_jump(x -> x == 0));
+    set(i_vector, 7, _ -> instruction_arithmetic(arithmetic_less));
+    set(i_vector, 8, _ -> instruction_arithmetic(arithmetic_equals));
     set(i_vector, 99, instruction_halt);
 
     loop (halt == false) {
 		local raw_opcode = get(memory, i_ptr);
         decode_opcode(raw_opcode);
         decode_parameters(memory, i_ptr);
+        i_ptr = i_ptr + instr_length;
         local execute_instruction = get(i_vector, opcode);
         execute_instruction();
-        i_ptr = i_ptr + instr_length;
 	}
-    return subseq(output, 0, output_ptr);
+    local result = subseq(output, 0, output_ptr);
+    return result;
 };
