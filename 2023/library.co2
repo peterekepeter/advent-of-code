@@ -1,0 +1,17 @@
+
+apply = function(fn, data, context){
+    local len = length(data);
+    loop(local i = 0, i < len, i = i + 1){
+        fn(get(data, i),i,context);
+    };
+};
+
+equals = function(a, b){
+    return a == b;
+};
+
+foreach = function(data, fun, context) {
+    apply(fun, data, context);
+}
+
+log = view;
