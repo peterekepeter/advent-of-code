@@ -1140,5 +1140,5 @@ set(cases, 3, {
         algorithm: "real",
         list: puzzleinput,
     },
-    out: 0,
+    out: 54473,
 });
