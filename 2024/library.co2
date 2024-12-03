@@ -1,3 +1,5 @@
+FALSE = bit(0);
+TRUE = bit(1);
 
 apply = function(fn, data, context){
     local len = length(data);
