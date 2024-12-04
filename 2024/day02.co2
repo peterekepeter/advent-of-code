@@ -1,33 +1,50 @@
 
-is_stable = (report) -> {
+is_stable = (report, skip) -> {
     local len = length(report);
     if (len <= 1) return 1;
-    local a=get(report,0);
+    local i=0;
+    if ( i == skip ) i=1;
+    local a=get(report,i);
+    i=i+1;
     local decr=FALSE;
     local incr=FALSE;
-    loop (local i=1, i<len, i=i+1) {
-        local b=get(report, i);
-        if (a < b) {
-            if (b - a > 3) return 0; 
-            if (decr) return 0;
-            incr=TRUE;
+    loop (i<len, i=i+1) {
+        if (i != skip)
+        {
+            local b=get(report, i);
+            if (a < b) {
+                if (b - a > 3) return 0; 
+                if (decr) return 0;
+                incr=TRUE;
+            }
+            if (a > b) {
+                if (a - b > 3) return 0;
+                if (incr) return 0;
+                decr = TRUE;
+            }
+            if (a == b) return 0;
+            a=b;
         }
-        if (a > b) {
-            if (a - b > 3) return 0;
-            if (incr) return 0;
-            decr = TRUE;
-        }
-        if (a == b) return 0;
-        a=b;
     }
     return 1;
+};
+
+is_tolerant_stable = (report) -> {
+    if (is_stable(report) == 1) return 1;
+    loop ( local i=0, i<length(report), i=i+1 )
+    {
+        if (is_stable(report, i) == 1) return 1;
+    }
+    return 0;
 };
 
 part1 = data -> reduce(
     data, (sum, report) -> sum + integer(is_stable(report)),0
 );
 
-cases = array(2);
+part2 = data -> reduce(
+    data, (sum, report) -> sum + integer(is_tolerant_stable(report)),0
+);
 
 example_input = [
     [7, 6, 4, 2, 1],
@@ -38,7 +55,6 @@ example_input = [
     [1, 3, 6, 7, 9],
 ];
 
-set(cases, 0, { fn: part1, in: example_input, out: 2 });
 
 puzzle_input = [
     [20, 21, 24, 25, 27, 29, 27],
@@ -1043,5 +1059,10 @@ puzzle_input = [
     [54, 57, 59, 61, 64, 65, 67],
 ];
 
+cases = array(5);
+set(cases, 0, { fn: part1, in: example_input, out: 2 });
 set(cases, 1, { fn: part1, in: puzzle_input, out: 526 });
+set(cases, 2, { fn: part2, in: example_input, out: 4 });
+set(cases, 3, { fn: part2, in: [[9, 1, 2], [1, 9, 2], [1, 2, 9]], out: 3 });
+set(cases, 4, { fn: part2, in: puzzle_input, out: 4 });
 
