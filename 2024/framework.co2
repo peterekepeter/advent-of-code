@@ -13,6 +13,7 @@ test = function(case, index){
         view("case", index, "passed with", result2, time_str);
     } else {
         view("case", index, "FAILED with", result2, "while expecting", out, time_str);
+        exit();
     };
 };
 
