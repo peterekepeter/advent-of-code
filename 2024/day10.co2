@@ -1,0 +1,92 @@
+
+search = (data,x,y,widht,height,value,visited) -> {
+    if (x<0) return 0;
+    if (y<0) return 0;
+    if (x>=widht) return 0;
+    if (y>=height) return 0;
+    local valuexy = get(get(data,y),x)-get("0",0);
+    if (valuexy != value) return 0;
+    if (valuexy == 9) {
+        local key = string(x)+":"+string(y);
+        if (visited != void)
+        {
+            if (get(visited,key) != void) 
+            {
+                return 0;
+            }
+            else {
+                set(visited,key,TRUE);
+                return 1;
+            }
+        }
+        else {
+            return 1;
+        }
+    }
+    else {
+        return search(data,x+1,y,widht,height,value+1,visited) 
+            +  search(data,x,y+1,widht,height,value+1,visited) 
+            +  search(data,x-1,y,widht,height,value+1,visited) 
+            +  search(data,x,y-1,widht,height,value+1,visited);
+    }
+};
+
+search_trailhead = (data,use_distinct_end) -> {
+    local height = length(data);
+    local width = length(get(data,0));
+    local sum = 0;
+    loop (local y=0, y<height, y=y+1)
+    {
+        local row = get(data, y);
+        loop (local x=0, x<width, x=x+1)
+        {
+            local value = get(row, x)-get("0",0);
+            if (value == 0) {
+                local visited = void;
+                if (use_distinct_end) {
+                    visited = object();
+                }
+                sum = sum + search(data,x,y,width,height,value,visited);
+            }
+        }
+    }
+    return sum;
+};
+
+part1 = data -> search_trailhead(data, TRUE);
+part2 = data -> search_trailhead(data, FALSE);
+
+
+cases = [
+    { fn:part1, in:[""], out:0 },
+    { fn:part1, in:["09"], out:0 },
+    { fn:part1, in:["0987654321"], out:0 },
+    { fn:part1, in:["0123456789"], out:1 },
+    { fn:part1, in:[
+        "123456789",
+        "012345678",
+    ], out:1 },
+    { fn:part1, in:[
+        "98765432123456789",
+        "87654321012345678",
+    ], out:2 },
+    { fn:part2, in:[
+        "987654323456789",
+        "8.___..1.___..8",
+        "765432101234567",
+    ], out:4 },
+    { fn:part2, in:[
+        "3210",
+        "4...",
+        "569.",
+        "678.",
+    ], out:2 },
+    { fn:part1, in:["0123456789876543210"], out:2 },
+    { fn:part1, in:[
+        ".0123",
+        ".7874",
+        ".6965",
+        "054.0",
+        "12321",
+    ], out:3 },
+];
