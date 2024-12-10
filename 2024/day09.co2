@@ -1,0 +1,143 @@
+
+
+decodeid = i -> (1-i+i/2*2)*(1+i/2)-1;
+
+unpack = str -> flatmap(str, (c, i) -> repeat([decodeid(i)], c-get("0",0)));
+
+compact = (list) -> {
+    local size=length(list);
+    local j=size-1;
+    local i=0;
+    loop (i<j) {
+        if (get(list,i) != -1)
+        {
+            i = i+1;
+            continue;
+        }
+        if (get(list,j) == -1) {
+            j = j-1;
+            continue;
+        }
+        set(list,i,get(list,j));
+        set(list,j,-1);
+        i = i+1;
+        j = j-1;
+        size = j;
+    }
+    loop(i<length(list),i=i+1)
+    {
+        if (get(list,i) == -1)
+        {
+            break;
+        }
+    }
+    return head(list,i);
+};
+
+compact2 = (list) -> {
+    local j=length(list)-1;
+    local i=0;
+    local no_free_before=0;
+    loop (j>0) {
+        local id = get(list,j);
+        if (id == -1)
+        {
+            "skip free space and find first block end";
+            loop (j>0,j=j-1) {
+                id = get(list,j);
+                if (id!=-1){
+                    break;
+                }
+            }
+        }
+        local block_end = j + 1;
+        local block_start = j;
+        "find block end";
+        loop (j>0,j=j-1) {
+            if (get(list,j) != id)
+            {
+                break;
+            }
+            block_start = j;
+        }
+        local block_size = block_end - block_start;
+        "find first free space";
+        loop (i=no_free_before, i<j, i=i+1) {
+            if (get(list,i) == -1) {
+                no_free_before = i;
+                break;
+            }
+        }
+        "find free block";
+        loop (i<j) {
+            "i points to first free position in a free block";
+            local free_begin = i;
+            local free_end = i;
+            "find block end";
+            loop (i<j,i=i+1) {
+                if (get(list,i) != -1)
+                {
+                    free_end = i;
+                    break;
+                }
+            }
+            local free_size = free_end - free_begin;
+            if (free_size >= block_size)
+            {
+                "copy the file to the free space";
+                loop (local k=0,k<block_size,k=k+1)
+                {
+                    set(list,free_begin+k,id);
+                    set(list,block_start+k,-1);
+                }
+                break;
+            }
+            "next free block";
+            loop(i<j,i=i+1) {
+                if (get(list,i) == -1) {
+                    break;
+                }
+            }
+        }
+    }
+    return list;
+};
+
+checksum = list -> reduce(list, (a, b, i) -> {
+    if (b<0) return a;
+    local result = a+b*i;
+    return result;
+}, 0);
+
+example_input = "2333133121414131402";
+
+basic_input = "12345";
+
+stringify = list -> reduce(list, (a,b) -> {
+    if (b == -1) return a+".";
+    a+string(b)
+}, "");
+
+test_compact = data -> stringify(compact(unpack(data)));
+test_compact2 = data -> stringify(compact2(unpack(data)));
+
+part1 = data -> checksum(compact(unpack(data)));
+part2 = data -> checksum(compact2(unpack(data)));
+
+
+_ = -1;
+
+cases = [
+    { fn:flatten, in:[[1,2],[3,4]], out:[1,2,3,4] },
+    { fn:unpack, in:"10203", out:[0,1,1,2,2,2] },
+    { fn:unpack, in:"11111", out:[0,_,1,_,2] },
+    { fn:unpack, in:"123", out:[0,_,_,1,1,1] },
+    { fn:compact, in:[0,_,1,_,2], out:[0,2,1] },
+    { fn:checksum, in:[0,1,2], out:5 },
+    { fn:unpack, in:"000000000010000000001", out:[5,10] },
+    { fn:compact, in:[5,10], out:[5,10] },
+    { fn:part1, in:"000000000010000000001", out:10 },
+    { fn:test_compact, in:example_input, out:"0099811188827773336446555566" },
+    { fn:part1, in:example_input, out:1928 },
+    { fn:test_compact2, in:example_input, out:"00992111777.44.333....5555.6666.....8888.." },
+];

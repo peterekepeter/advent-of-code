@@ -18,6 +18,27 @@ map = (data, fn) -> {
 };
 
 equals = function(a, b){
+    local ta = type(a);
+    local tb = type(b);
+    if (ta != tb) {
+        return FALSE;
+    }
+    if (ta == "array")
+    {
+        if (length(a) != length(b)) {
+            return FALSE;
+        }
+        loop (local i=0,i<length(a),i=i+1) {
+            if (equals(get(a,i),get(b,i)))
+            {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
     return a == b;
 };
 
@@ -75,10 +96,33 @@ reduce = (seq, fn, accum) -> {
         accum = get(seq, 0);
     }
     loop (i<l, i=i+1) {
-        accum = fn(accum, get(seq, i));
+        accum = fn(accum, get(seq, i), i);
     }
     return accum;
 };
+
+flatten = (arrays) -> {
+    local totalsize = 0;
+    local len = length(arrays);
+    loop (local i=0,i<len,i=i+1)
+    {
+        totalsize = totalsize + length(get(arrays,i));
+    }
+    local result = array(totalsize);
+    local k = 0;
+    loop (local i=0,i<len,i=i+1) {
+        local row = get(arrays, i);
+        local alen = length(row);
+        loop (local j=0, j<alen, j=j+1) 
+        {
+            set(result,k,get(row,j));
+            k=k+1;
+        }
+    }
+    return result;
+};
+
+flatmap = (data, fn) -> flatten(map(data, fn));
 
 count = (seq, item) -> {
     local i=0;
@@ -127,4 +171,4 @@ qsort = (list, a, b) -> {
     qsort(list, a, j);
     qsort(list, j, b);
     return;
-}
+};
