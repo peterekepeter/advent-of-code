@@ -39,6 +39,32 @@ equals = function(a, b){
         }
         return TRUE;
     }
+    if (ta == "object")
+    {
+        local pa = properties(a);
+        loop (local i=0, i<length(pa), i=i+1)
+        {
+            local prop = get(pa,i);
+            if (equals(get(a, prop), get(b, prop))) {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        local pb = properties(b);
+        loop (local i=0, i<length(pb), i=i+1)
+        {
+            local prop = get(pb,i);
+            if (equals(get(a, prop), get(b, prop))) {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
     return a == b;
 };
 

@@ -1,0 +1,133 @@
+
+
+count_digits = number -> {
+    local i = 0;
+    loop (number != 0) {
+        number = number / 10;
+        i = i + 1;
+    }
+    return i;
+};
+
+is_even = n -> n - (n/2*2) == 0;
+
+blink = data -> flatmap(data, stone -> {
+    if (stone == 0) return [1];
+    local digit_count = count_digits(stone);
+    if (is_even(digit_count)) {
+        local split = 1;
+        loop (local i=0, i<digit_count, i=i+2) split=split*10;
+        return [stone/split, stone-stone/split*split];
+    }
+    return [stone*2024];
+});
+
+stone_count_after_blinks = (stones, blink_count) -> {
+    loop (local i=0, i<blink_count, i=i+1) {
+        stones = blink(stones);
+        print("progress ",i," of ",blink_count,"\r");
+    }
+    return length(stones);
+};
+
+increment_count = (dict, key, value) -> {
+    local old_value = get(dict, key);
+    if (old_value == void) {
+        set(dict, key, value);
+    }
+    else {
+        set(dict, key, old_value + value);
+    }
+};
+
+blink_dict = stones_dict -> {
+    local props = properties(stones_dict);
+    local next_stones = object();
+    loop (local i=0, i<length(props), i=i+1) {
+        local prop = get(props, i);
+        local stone_count = get(stones_dict, prop);
+        if (stone_count == 0) {
+            continue;
+        }
+        local stone_type = integer(prop);
+        if (stone_type == 0) {
+            increment_count(next_stones, "1", stone_count);
+            continue;
+        }
+        local digit_count = count_digits(stone_type);
+        if (is_even(digit_count)) {
+            local split = 1;
+            loop (local i=0, i<digit_count, i=i+2) split=split*10;
+            local new_type_a = stone_type/split;
+            local new_type_b = stone_type-stone_type/split*split;
+            increment_count(next_stones, string(new_type_a), stone_count);
+            increment_count(next_stones, string(new_type_b), stone_count);
+            continue;
+        }
+        
+        increment_count(next_stones, string(stone_type*2024), stone_count);
+    }
+    return next_stones;
+};
+
+stones_array_to_dict = data -> {
+    local result = object();
+    loop (local i=0, i<length(data), i=i+1) {
+        increment_count(result, string(get(data,i)), 1);
+    }
+    return result;
+};
+
+count_stones_in_dict = dict -> {
+    local sum = 0;
+    local props = properties(dict);
+    loop (local i=0, i<length(props), i=i+1) {
+        sum = sum + get(dict, get(props, i));
+    }
+    return sum;
+};
+
+optimized_stone_count_after_blinks = (stones, blink_count) -> {
+    local dict = stones_array_to_dict(stones);
+    loop (local i=0, i<blink_count, i=i+1) {
+        dict = blink_dict(dict);
+        print("progress ",i," of ",blink_count,"\r");
+    }
+    return count_stones_in_dict(dict);
+};
+
+part1 = stones -> stone_count_after_blinks(stones, 25);
+part2 = stones -> optimized_stone_count_after_blinks(stones, 75);
+
+cases = [
+    { fn:blink, in:[], out:[] },
+    { fn:blink, in:[0], out:[1] },
+    { fn:blink, in:[1], out:[2024] },
+    { fn:count_digits, in:1, out:1 },
+    { fn:count_digits, in:12, out:2 },
+    { fn:count_digits, in:123, out:3 },
+    { fn:is_even, in:0, out:TRUE },
+    { fn:is_even, in:1, out:FALSE },
+    { fn:is_even, in:2, out:TRUE },
+    { fn:blink, in:[2], out:[4048] },
+    { fn:blink, in:[10], out:[1,0] },
+    { fn:blink, in:[123], out:[123*2024] },
+    { fn:blink, in:[1234], out:[12,34] },
+    { fn:blink, in:[12345], out:[12345*2024] },
+    { fn:blink, in:[12345678], out:[1234,5678] },
+    { fn:blink, in:[1234,5678], out:[12,34,56,78] },
+    { fn:blink, in:[12,34,56,78], out:[1,2,3,4,5,6,7,8] },
+    { fn:blink_dict, in:{}, out:{} },
+    { fn:blink_dict, in:{"0":1}, out:{"1":1} },
+    { fn:blink_dict, in:{"1":1}, out:{"2024":1} },
+    { fn:blink_dict, in:{"2":1}, out:{"4048":1} },
+    { fn:blink_dict, in:{"10":1}, out:{"1":1, "0":1} },
+    { fn:blink_dict, in:{"100":1}, out:{"202400":1} },
+    { fn:blink_dict, in:{"1000":1}, out:{"10":1, "0":1} },
+    { fn:blink_dict, in:{"12":1,"34":1}, out:{"1":1,"2":1,"3":1,"4":1} },
+    { fn:blink_dict, in:{"0":16}, out:{"1":16} },
+    { fn:blink_dict, in:{"10":16, "0":4}, out:{"1":20,"0":16} },
+    { fn:stones_array_to_dict, in:[1,2,3], out:{"1":1,"2":1,"3":1} },
+    { fn:count_stones_in_dict, in:{}, out:0 },
+    { fn:count_stones_in_dict, in:{"1":20,"0":16}, out:36 },
+];
