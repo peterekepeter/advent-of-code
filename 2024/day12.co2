@@ -1,0 +1,139 @@
+search = (data, x, y, w, h,chr, result) -> {
+    "edge of map is always perimited";
+    if (x<0) return 1;
+    if (y<0) return 1;
+    if (x>=w) return 1;
+    if (y>=h) return 1;
+    local row = get(data,y);
+    local value = get(row,x);
+    local visiting = get("*",0);
+    local visited = get(".",0);
+    if (value != chr) {
+        if (value == visiting) return 0; "not perimiter with itself";
+        return 1;
+    }
+    "update map to keep track of location being visited";
+    set(row,x,visiting);
+    result.area = result.area + 1;
+    "search area and count perimiters";
+    local right = search(data, x+1, y, w, h, chr, result); 
+    local left = search(data, x-1, y, w, h, chr, result);
+    local down = search(data, x, y+1, w, h, chr, result);
+    local up = search(data, x, y-1, w, h, chr, result);
+    result.perimiter = result.perimiter + left + right + down + up;
+    "count edges";
+    local edges = 0;
+    if (up*left == 1) {
+        edges = edges + 2;
+    }
+    if (down*right == 1) { 
+        edges = edges + 2;
+    }
+    if (left+down == 0) {
+        if (search(data, x-1,y+1,w,h,chr,result) == 1) 
+        {
+            edges = edges + 2;
+        }
+    }
+    if (up+right == 0) {
+        if (search(data, x+1,y-1,w,h,chr,result) == 1) {
+            edges = edges + 2;
+        }
+    }
+    result.edges = result.edges + edges;
+    return 0;
+};
+
+measure = (data, x, y) -> {
+    if (x == void) x = 0;
+    if (y == void) y = 0;
+    local result = { area:0, perimiter: 0, edges: 0 };
+    local h = length(data);
+    local w = length(get(data,0));
+    if (x<0) return result;
+    if (y<0) return result;
+    if (x>=w) return result;
+    if (y>=h) return result;
+    local chr = get(get(data,y),x);
+    search(data, x, y, w, h, chr, result);
+    return result;
+};
+
+floodfill = (data, x, y, w, h, chrfrom, chrto) -> {
+    "edge of map is always perimited";
+    if (x<0) return 1;
+    if (y<0) return 1;
+    if (x>=w) return 1;
+    if (y>=h) return 1;
+    local row = get(data,y);
+    local value = get(row,x);
+    if (value != chrfrom) {
+        return;
+    }
+    set(row,x,chrto);
+    floodfill(data, x+1, y, w, h, chrfrom, chrto);
+    floodfill(data, x-1, y, w, h, chrfrom, chrto);
+    floodfill(data, x, y+1, w, h, chrfrom, chrto);
+    floodfill(data, x, y-1, w, h, chrfrom, chrto);
+};
+
+item_pricing_1 = item -> item.perimiter * item.area;
+item_pricing_2 = item -> item.edges * item.area;
+
+sum_of_prices = (data, pricing_fn) -> {
+    local h = length(data);
+    local w = length(get(data,0));
+    local total_price = 0;
+    loop (local x=0, x<w, x=x+1) {
+        loop (local y=0, y<h, y=y+1) {
+            local value = get(get(data,y),x);
+            if (value == get(".",0)) {
+                "already visited";
+                continue;
+            }
+            local partial = measure(data, x, y);
+            floodfill(data,x,y,w,h,get("*",0),get(".",0));
+            total_price = total_price + pricing_fn(partial);
+        }
+    }
+    return total_price;
+};
+
+part1 = data -> sum_of_prices(data, item_pricing_1);
+part2 = data -> sum_of_prices(data, item_pricing_2);
+
+
+cases = [
+    { fn:measure, in:[""], out:{ area:0, perimiter: 0, edges: 0 } },
+    { fn:measure, in:["A"], out:{ area:1, perimiter: 4, edges: 4 } },
+    { fn:measure, in:["AA"], out:{ area:2, perimiter: 6, edges: 4 } },
+    { fn:measure, in:["AAB"], out:{ area:2, perimiter: 6, edges: 4 } },
+    { fn:measure, in:[
+        "AA",
+        "AA",
+    ], out:{ area:4, perimiter: 8, edges: 4 } },
+    { fn:measure, in:[ 
+        "AA",
+        "A_",
+    ], out:{ area:3, perimiter: 8, edges: 6 } },
+    { fn:measure, in:[ 
+        "AA_",
+        "_AA",
+    ], out:{ area:4, perimiter: 10  , edges: 8 } },
+    { fn:measure, in:[ 
+        "A_",
+        "AA",
+        "_A",
+    ], out:{ area:4, perimiter: 10  , edges: 8 } },
+    { fn:measure, in:[ 
+        "AAA",
+        "A_A",
+        "AAA",
+    ], out:{ area:8, perimiter: 16  , edges: 8 } },
+    { fn:part1, in:[""], out:0 },
+    { fn:part1, in:["A"], out:4 },
+    { fn:part1, in:["AA"], out:12 },
+    { fn:part1, in:["AAB"], out:16 },
+    
+];
+
