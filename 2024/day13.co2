@@ -1,0 +1,166 @@
+
+
+parse_number = state -> {
+    local zero = get("0",0);
+    local nine = get("9",0);
+    local strlen = length(state.txt);
+    local i=state.pos;
+    loop (i < strlen, i=i+1) {
+        local value = get(state.txt, i);
+        if (value >= zero)
+        {
+            if (value <= nine)
+            {
+                break;
+            }
+        }
+    }
+    local result = 0;
+    loop (i < strlen, i=i+1) {
+        local value = get(state.txt, i);
+        if (value >= zero)
+        {
+            if (value <= nine)
+            {
+                result = result * 10 + value - zero;
+                continue;
+            }
+        }
+        break;
+    }
+    state.pos = i;
+    return result;
+};
+
+parse_machine = state -> {
+    local result = array(6);
+    loop (local i=0, i<6, i=i+1) {
+        set(result, i, parse_number(state));
+    }
+    return result;
+};
+
+search_cost_recursive = (ax,ay,bx,by,px,py,cost,maxcost) -> {
+    if (cost>=maxcost) return cost;
+    if (px < 0) return 999999;
+    if (py < 0) return 999999;
+    if ((px == py)*(px == 0)) return cost;
+    local a_first = FALSE;
+
+    "determine which branch tot take first";
+    if ((px > py)*(ax > bx * 3)) a_first = TRUE;
+    if ((px < py)*(ay > by * 3)) a_first = TRUE;
+
+    local a = 0;
+    local b = 0;
+    if (a_first) {
+        a = search_cost_recursive(ax,ay,bx,by,px-ax,py-ay,cost+3,maxcost);
+        if (a < maxcost) { maxcost = a; log(maxcost); }
+        b = search_cost_recursive(ax,ay,bx,by,px-bx,py-by,cost+1,maxcost);
+        if (b < maxcost) { maxcost = b; log(maxcost); }
+    }
+    else {
+        b = search_cost_recursive(ax,ay,bx,by,px-bx,py-by,cost+1,maxcost);
+        if (b < maxcost) { maxcost = b; log(maxcost); }
+        a = search_cost_recursive(ax,ay,bx,by,px-ax,py-ay,cost+3,maxcost);
+        if (a < maxcost) { maxcost = a; log(maxcost); }
+    }
+
+    if (a<b) {
+        return a;
+    }
+    return b;
+};
+
+search_cost_basic = (ax,ay,bx,by,px,py,cost,maxcost) -> {
+    local a=0;
+    local b=0;
+    maxcost = 999;
+    loop (local b=0,b<100,b=b+1)
+    {
+        cost = a*3+b*1;
+        if (cost >= maxcost) break;
+        loop (local a=0,a<100,a=a+1)
+        {
+            cost = a*3+b*1;
+            if (cost >= maxcost) break;
+            if (ax*a+bx*b == px)
+            {
+                if (ay*a+by*b == py)
+                {
+                    cost = a*3+b*1;
+                    if (cost < maxcost) {
+                        maxcost = cost;
+                    }
+                    log("found",a,b,cost,maxcost);
+                }
+            }
+        }   
+    }
+    if (maxcost == 999) return 0;
+    return maxcost;
+};
+
+min = (a,b) -> { if (a<b) return a; return b; };
+
+search_cost_better = (ax,ay,bx,by,px,py,cost,maxcost) -> {
+    local a=0;
+    if (ax+ay+bx+by == 0) return 0;
+    b=min(px/bx,py/by);
+    a=min((px-b*bx)/ax,(py-b*by)/ay);
+    maxcost = 99999999999999;
+    if ((ax*a+bx*b == px) * (ay*a+by*b == py)) {
+        cost = a*3+b*1;
+        if (cost < maxcost) maxcost = cost;
+    }
+    log(a,b);
+    if (maxcost == 99999999999999) return 0;
+    return maxcost;
+};
+
+search_cost = (state) -> {
+    return search_cost_better(get(state,0), get(state,1), get(state, 2), get(state, 3), get(state, 4), get(state, 5), 0, 999999);
+};
+
+search_cost_added = (state) -> {
+    local value = 10000000000000;
+    return search_cost_better(
+        get(state,0), get(state,1), 
+        get(state, 2), get(state, 3), 
+        get(state, 4) + value, get(state, 5) + value, 
+    0, 999999);
+};
+
+part = (input, fn) -> {
+    local sum = 0;
+    parser = {txt:input,pos:0};
+    loop (parser.pos<length(input)) {
+        local machine_state = parse_machine(parser);
+        local cost = fn(machine_state);
+        if (cost < 999999) {
+            sum=sum+cost;
+        }
+    }
+    return sum;
+};
+
+part1 = input -> part(input, search_cost);
+part2 = input -> part(input, search_cost_added);
+
+example0 = "
+Button A: X+1, Y+2
+Button B: X+2, Y+1
+Prize: X=3, Y=3
+";
+
+example_without_solution = "10 10 20 20 3 3";
+
+
+cases = [
+    { fn:parse_number, in:{ txt:"42", pos:0 }, out:42 },
+    { fn:parse_machine, in:{txt:example0,pos:0}, out:[1,2,2,1,3,3] },
+    { fn:search_cost, in:[1,2,2,1,3,3], out:4 },
+    { fn:search_cost, in:[1,2,2,1,30,30], out:40 },
+    { fn:part1, in:example0, out:4 },
+    { fn:part1, in:example_without_solution, out:0 },
+];
