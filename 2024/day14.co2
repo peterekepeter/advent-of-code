@@ -1,0 +1,215 @@
+
+parse_signed_number = state -> {
+    local zero = get("0",0);
+    local nine = get("9",0);
+    local minus = get("-",0);
+    local strlen = length(state.txt);
+    local i=state.pos;
+    loop (i < strlen, i=i+1) {
+        local value = get(state.txt, i);
+        if ((value >= zero)*(value <= nine)+(value == minus))
+        {
+            break;
+        }
+    }
+    local result = 0;
+    local negative = FALSE;
+    loop (i < strlen, i=i+1) {
+        local value = get(state.txt, i);
+        if ((value >= zero)*(value <= nine)+(value == minus))
+        {
+            if (value == minus) 
+            {
+                negative = TRUE;
+                continue;
+            }
+            else 
+            {
+                result = result * 10 + value - zero;
+                continue;
+            }
+        }
+        break;
+    }
+    state.pos = i;
+    if (negative) result = -result;
+    return result;
+};
+
+parse_robot = (parser, robot) -> {
+    if (type(parser) == "string") parser = {txt:parser,pos:0};
+    if (robot == void) robot = object();
+    robot.px = parse_signed_number(parser);
+    robot.py = parse_signed_number(parser);
+    robot.vx = parse_signed_number(parser);
+    robot.vy = parse_signed_number(parser);
+    return robot;
+};
+
+wrap = (x,y) -> {
+    x = x - x/y*y;
+    if (x < 0) x = x + y;
+    return x;
+};
+
+test_wrap = input -> wrap(get(input,0), get(input,1));
+
+simulate_robot = robo -> {
+    local x = robo.px + robo.vx * robo.steps;
+    local y = robo.py + robo.vy * robo.steps;
+    x = wrap(x, robo.w);
+    y = wrap(y, robo.h);
+    robo.px = x;
+    robo.py = y;
+    robo.steps = 0;
+    return robo;
+};
+
+increment_quad = (quads, robo) -> {
+    local hx = robo.w / 2;
+    local hy = robo.h / 2;
+    if (robo.px == hx) return;
+    if (robo.py == hy) return;
+    if (robo.px < hx)
+    {
+        if (robo.py < hy) 
+        {
+            quads.a = quads.a + 1;
+        }
+        else 
+        {
+            quads.d = quads.d + 1;
+        }
+    }
+    else 
+    {
+        if (robo.py < hy) quads.b = quads.b + 1;
+        else quads.c = quads.c + 1;
+    }
+};
+
+part1 = input -> {
+    local parser = { txt:input.txt, pos: 0 };
+    local robo = { w:input.w, h:input.h, steps:0 };
+    local quads = { a:0,b:0,c:0,d:0 };
+    loop (parser.pos < length(input.txt))
+    {
+        parse_robot(parser, robo);
+        robo.steps = 100;
+        simulate_robot(robo);
+        increment_quad(quads, robo);
+    }
+    return quads.a * quads.b * quads.c * quads.d;
+};
+
+screen_init = (w,h) -> {
+    local screen = array(input.h);
+    loop (local i=0, i<input.h, i=i+1) {
+        set(screen,i, repeat(" ", input.w));
+    }
+    return screen;
+};
+
+screen_render_robots = (screen, robots, chr) -> {
+    loop (local i=0, i<length(robots), i=i+1)
+    {
+        local robo = get(robots, i);
+        set(get(screen, robo.py), robo.px, chr);
+    }
+};
+
+screen_print = screen -> {
+    loop (local i=0, i<input.h, i=i+1) {
+        log(get(screen,i))
+    }
+};
+
+simulate_robots_step = (list, steps) -> {
+    local len = length(list);
+    loop (local i=0,i<len,i=i+1)
+    {
+        local robo = get(robots,i);
+        robo.steps = steps;
+        simulate_robot(robo);
+    }
+    return;
+};
+
+get_quadrants = (quads, list) -> {
+    if (quads == void) quads = { a:0,b:0,c:0,d:0 };
+    local len = length(list);
+    quads.a = 0;
+    quads.b = 0;
+    quads.c = 0;
+    quads.d = 0;
+    loop (local i=0, i<len, i=i+1)
+    {
+        increment_quad(quads, get(list,i));
+    }
+    return quads;
+};
+
+part2 = input -> {
+    local parser = { txt:input.txt, pos: 0 };
+    local robots = [];
+    local quads = { a:0,b:0,c:0,d:0 };
+    loop (parser.pos < length(input.txt))
+    {
+        local robo = parse_robot(parser);
+        robo.w = input.w;
+        robo.h = input.h;
+        robots = robots + [robo];
+    }
+    local screen = screen_init(input.w, input.h);
+    local CHAR=get("*",0);
+    local SPACE=get(" ",0);
+    local quads=void;
+    local last_i=-1;
+    local frame=1+103;
+    local step_size = 103;
+    local minscore = 9999999999999999;
+    simulate_robots_step(robots, frame);
+    loop (local i=0, i<10000, i=i+1) {
+        quads = get_quadrants(quads, robots);
+        local score = quads.a*quads.b*quads.c*quads.d;
+        if (score < minscore)
+        {
+            minscore = score;
+            system("CLS");
+            log("frame:",frame,i,last_i,i-last_i, quads);
+            screen_render_robots(screen, robots, CHAR);
+            screen_print(screen);
+            screen_render_robots(screen, robots, SPACE);
+            last_i = i;
+        }
+        frame = frame + step_size;
+        simulate_robots_step(robots, step_size);
+    }
+    
+
+    return 0;
+};
+
+cases = [
+    { fn:parse_robot, in:"p=0,1 v=2,3", out:{px:0,py:1,vx:2,vy:3} },
+    { fn:parse_robot, in:"p=16,427 v=-20,-30", out:{px:16,py:427,vx:-20,vy:-30} },
+    { fn:parse_robot, in:"0 1 2 3", out:{px:0,py:1,vx:2,vy:3} },
+    { 
+        fn:simulate_robot, 
+        in:{ px:1,py:1,vx:1,vy:2,w:16,h:16,steps:1 }, 
+        out:{ px:2,py:3,vx:1,vy:2,w:16,h:16,steps:0 }, 
+    },
+    { fn:test_wrap, in:[1,10], out:1 },
+    { fn:test_wrap, in:[11,10], out:1 },
+    { fn:test_wrap, in:[-1,10], out:9 },
+    { fn:test_wrap, in:[-2,10], out:8 },
+    { 
+        fn:simulate_robot, 
+        in:{ px:0,py:0,vx:-1,vy:-1,w:16,h:16,steps:1 }, 
+        out:{ px:15,py:15,vx:-1,vy:-1,w:16,h:16,steps:0 }, 
+    },
+    { fn:part1, in:{txt:"0 0 0 0",w:4,h:4}, out:0 },
+    { fn:part1, in:{w:4,h:4,txt:"0 0 0 0  3 0 0 0  0 3 0 0  3 3 0 0"}, out:1 },
+    { fn:part1, in:{w:5,h:5,txt:"0 0 0 0  2 0 0 0  0 2 0 0  2 2 0 0"}, out:0 },
+    { fn:part1, in:{w:11,h:7,txt:example_input}, out:12 },
+];

@@ -1,0 +1,142 @@
+
+table_init = size -> {
+    local result = array(size);
+    loop (local i=0, i<length(result), i=i+1) {
+        local row = array(size);
+        set(result, i, row);
+        loop (local j=0, j<size, j=j+1) {
+            set(row, j, -1);
+        }
+    }
+    return result;
+};
+
+set_xy = (tab,x,y,value) -> set(get(tab,y),x,value);
+get_xy = (tab,x,y) -> get(get(tab,y),x);
+get_xy_checked = (tab,x,y) -> {
+    if (x<0) return -1;
+    if (y<0) return -1;
+    local size = length(tab);
+    if (x>=size) return -1;
+    if (y>=size) return -1;
+    return get(get(tab,y),x);
+};
+
+table_print = tab -> {
+    local size = length(tab);
+    loop (local y=0, y<length(tab), y=y+1) {
+        loop (local x=0, x<length(tab), x=x+1) {
+            local value = get_xy(tab,x,y);
+            if (value == -8) {
+                print(" ");
+                continue;
+            }
+            if (value >= 0) {
+                print(string(value-value/10*10));
+                continue;
+            } 
+            print("!");
+        }
+        print("\n");
+    }
+};
+
+flood_step = tab -> {
+    local size = length(tab);
+    local changed = FALSE;
+    local size2 = size*2;
+    local sample = [-1,0,0,-1,1,0,0,1];
+    loop (local yy=0, yy<size2, yy=yy+1) {
+        local y=yy;
+        if (y>=size) y = size - yy + size - 1;
+        loop (local xx=0, xx<size2, xx=xx+1) {
+            local x=xx;
+            if (x>=size) x = size - xx + size - 1;
+            local current_value = get_xy(tab,x,y);
+            if (current_value < -1) continue;
+            if (current_value == 0) continue;
+            local bestlocal = 999999;
+            loop (local k=0, k<8, k=k+2) {
+                local dx = get(sample,k);
+                local dy = get(sample,k+1);
+                local value = get_xy_checked(tab, x+dx, y+dy);
+                if (value < 0) continue;
+                if (value < bestlocal) {
+                    bestlocal = value;
+                }
+            }   
+            if (bestlocal == 999999) bestlocal = -1;
+            else { bestlocal = bestlocal + 1; }
+            if ((current_value != -1) * (bestlocal > current_value)) {
+                bestlocal = -2;
+            }
+            if (bestlocal != current_value) {
+                set_xy(tab,x,y,bestlocal);
+                changed = TRUE;
+            }
+        }
+    }
+    return changed;
+};
+
+clear_path_cut = tab -> {
+    local size = length(tab);
+    loop (local i=0, i<size, i=i+1) {
+        loop (local j=0, j<size, j=j+1) {
+            if (get_xy(tab,i,j) == -2) {
+                set_xy(tab,i,j, -1);
+            }
+        }
+    }
+};
+
+apply_corrupt_pixels = (tab, pixels, limit) -> {
+    local max = limit * 2;
+    loop (local i=0, i<max, i=i+2) {
+        local x = get(pixels, i);
+        local y = get(pixels, i+1);
+        set_xy(tab, x, y, -8);
+    }
+};
+
+part1 = input -> {
+    local tab = table_init(input.size);
+    set_xy(tab,0,0,0);
+    local limit = input.start;
+    if (limit == void) limit = 0;
+    apply_corrupt_pixels(tab, input.pixels, limit);
+    loop (local i=0,flood_step(tab),i=i+1) { print(i,"\r"); };
+    table_print(tab);
+    return get_xy(tab, input.size-1, input.size-1);
+};
+
+part2 = input -> {
+    local tab = table_init(input.size);
+    set_xy(tab,0,0,0);
+    local limit = input.start;
+    if (limit == void) limit = 0;
+    loop {
+        apply_corrupt_pixels(tab, input.pixels, limit);
+        "table_print(tab);";
+        print("corrupt bytes ", limit, "\r");
+        loop (local i=0, flood_step(tab), i=i+1) {
+            clear_path_cut(tab);
+            log("-"*input.size);
+            table_print(tab);
+            print("find path ",i," ",limit,"\r"); 
+        };
+        if (get_xy(tab, input.size-1, input.size-1) < 0) {
+            log(limit, length(input.pixels));
+            return [get(input.pixels, (limit-1)*2), get(input.pixels, (limit-1)*2+1)];
+        } 
+        limit = limit + 1;
+    }
+    return get_xy(tab, input.size-1, input.size-1);
+};
+cases = [
+    { fn:part1, in:{size:4,pixels:[]}, out:6 },
+    { fn:part1, in:{size:5,pixels:[4,2,3,3,0,3,1,2,2,1],start:5}, out:10 },
+    { fn:part2, in:{size:5,pixels:[4,2,3,3,0,3,1,2,2,1,3,0]}, out:[3,0] },
+];
+];
+

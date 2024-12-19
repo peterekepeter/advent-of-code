@@ -1,0 +1,349 @@
+
+find_pos = (input, str) -> {
+    local height = length(input);
+    local char = get(str, 0);
+    loop (local y=0, y<height, y=y+1) 
+    {
+        local row = get(input, y);
+        local width = length(row);
+        loop (local x=0, x<width, x=x+1){
+            local value = get(row, x);
+            if (value == char) 
+            {
+                return {x:x,y:y};
+            }
+        }
+    }
+    return void;
+};
+
+min = (a,b) -> {
+    if (a<b) return a;
+    return b;
+};
+
+abs = a -> {
+    if (a<0) return -a;
+    return a;
+};
+
+clear = data -> {
+    local cmd1 = "x[2J";
+    local cmd2 = "x[H";
+    set(cmd1,0,0x1b);
+    set(cmd2,0,0x1b);
+    log(cmd1);
+    log(cmd2);
+};
+
+dist2dsqr = (x0,y0,x1,y1) -> {
+    local dx = abs(x1-x0);
+    local dy = abs(y1-y0);
+    return dx+dy;
+};
+
+search_paths = (data, x, y, dx, dy, score, maxscore) -> {
+    if (score>maxscore) return FALSE;
+    if ((x == data.end_x)*(y == data.end_y)*(score==maxscore)) {
+        return TRUE;
+    }
+    local value = get(get(data.input,y),x);
+    if (value == get("#",0)) return FALSE;
+    if (value == get("%",0)) return FALSE;
+    local key = string(x)+":"+string(y);
+
+    set(get(data.input,y),x,get("%",0));
+
+"    loop (local y=0, y<data.height, y=y+1) {
+        log(get(data.input,y));
+    }";
+
+    local opt = [
+        [x,y,dx,dy,score+1,0],
+        [x,y,-dy,dx,score+1001,0],
+        [x,y,dy,-dx,score+1001,0],
+        [x,y,-dx,-dy,score+2001,0],
+    ];
+    loop (local i=0,i<length(opt),i=i+1) 
+    {
+        local o=get(opt,i);
+        local o_x=get(o,0);
+        local o_y=get(o,1);
+        local o_dx=get(o,2);
+        local o_dy=get(o,3);
+        o_x=o_x+o_dx;
+        o_y=o_y+o_dy;
+        set(o,0,o_x);
+        set(o,1,o_y);
+        local dist =dist2dsqr(o_x,o_y,data.end_x,data.end_y);
+        set(o,5,dist);
+    }
+    local is_one_of_best = FALSE;
+    loop (local i=0,i<length(opt),i=i+1) {
+        local o = get(opt,i);
+        local result = search_paths(data,get(o,0),get(o,1),get(o,2),get(o,3),get(o,4),maxscore);
+        if (result) {
+            is_one_of_best = TRUE;
+            set(data.best_spots, key, {score:maxscore,y:y,x:x});
+            clear();
+            loop (local y=0, y<data.height, y=y+1) {
+                log(get(data.input,y));
+            }
+            log("spots count",length(properties(data.best_spots)));
+        }
+    }
+    set(get(data.input,y),x,get(".",0));
+"    loop (local y=0, y<data.height, y=y+1) {
+        log(get(data.input,y));
+    }";
+    
+    return is_one_of_best;
+};
+
+search = (data, x, y, dx, dy, score, maxscore) -> {
+    if (score>maxscore) return score;
+    if ((x == data.end_x)*(y == data.end_y)) {
+        if (score < data.best_score) {
+            data.best_score = score;
+            data.best_distance = 0;
+            local key = string(x)+":"+string(y);
+            set(data.best_spots, key, {score:score,y:y,x:x});
+        }
+        return score;
+    }
+    local value = get(get(data.input,y),x);
+    if (value == get("#",0)) return maxscore;
+    local key = string(x)+":"+string(y);
+    local visited_score = get(data.visited, key);
+    if ((visited_score != void)) {
+        if ((visited_score < score)) {
+            return maxscore;
+        }
+    }   
+    set(data.visited, key, score);
+    set(get(data.input,y),x,get("@",0));
+    local distance = dist2dsqr(x,y,data.end_x,data.end_y);
+    if (bit(1)*(distance < data.best_distance)) {
+        data.best_distance = distance;
+        "clear();";
+        loop (local y=0, y<data.height, y=y+1) log(get(data.input,y));
+        log(x,y,dx,dy,score,maxscore,"dist",distance);
+    }
+    local opt = [
+        [x,y,dx,dy,score+1,0],
+        [x,y,-dy,dx,score+1001,0],
+        [x,y,dy,-dx,score+1001,0],
+        [x,y,-dx,-dy,score+2001,0],
+    ];
+    loop (local i=0,i<length(opt),i=i+1) 
+    {
+        local o=get(opt,i);
+        local o_x=get(o,0);
+        local o_y=get(o,1);
+        local o_dx=get(o,2);
+        local o_dy=get(o,3);
+        o_x=o_x+o_dx;
+        o_y=o_y+o_dy;
+        set(o,0,o_x);
+        set(o,1,o_y);
+        local dist =dist2dsqr(o_x,o_y,data.end_x,data.end_y);
+        set(o,5,dist);
+    }
+    loop (local i=0,i<length(opt),i=i+1)
+    {
+        loop (local j=i+1,j<length(opt),j=j+1) {
+            local dist_i = get(get(opt,i),5);
+            local dist_j = get(get(opt,j),5);
+            if (dist_i > dist_j) {
+                local t=get(opt,i);
+                set(opt,i,get(opt,j));
+                set(opt,j,t);
+            }
+        }
+    }
+    local bestresult = maxscore;
+    loop (local i=0,i<length(opt),i=i+1) {
+        local o = get(opt,i);
+        local result = search(data,get(o,0),get(o,1),get(o,2),get(o,3),get(o,4),maxscore);
+        if (result <= bestresult) {
+            bestresult = result;
+        }
+    }
+    set(get(data.input,y),x,get(".",0));
+    set(data.best_spots, key, {score:bestresult,y:y,x:x});
+    return bestresult;
+};
+
+table_init = (w,h,value) -> {
+    local rows = array(h);
+    loop (local i=0, i<h, i=i+1) {
+        local row = array(w);
+        loop (local j=0,j<w,j=j+1) {
+            set(row,j,value);
+        }
+        set(rows,i,row);
+    };
+    return rows;
+};
+
+dp = data -> {
+    local table = table_init(data.width, data.height);
+};
+
+part1 = input -> {
+    log("part1");
+    local start = find_pos(input,"S");
+    local end = find_pos(input,"E");
+    local dir_x = 1;
+    local dir_y = 0;
+    local width = length(get(input,0));
+    local height = length(input);
+    
+    log("data=",start,end);
+    local data = {
+        input: input,
+        width: width,
+        height:height,
+        start_x: start.x,
+        start_y: start.y,
+        end_x: end.x,
+        end_y: end.y,
+        best_distance: 999999999,
+        best_score: 999999999,
+        visited: {},
+        best_spots: {},
+    };
+    log("data={}");
+    return search(data, start.x, start.y, dir_x, dir_y, 0, 73432);
+};
+
+part2 = input -> {
+    local start = find_pos(input,"S");
+    local end = find_pos(input,"E");
+    local dir_x = 1;
+    local dir_y = 0;
+    local width = length(get(input,0));
+    local height = length(input);
+    local data = {
+        input: input,
+        width: width,
+        height:height,
+        start_x: start.x,
+        start_y: start.y,
+        end_x: end.x,
+        end_y: end.y,
+        best_distance: 999999999,
+        best_score: 999999999,
+        visited: {},
+        best_spots: {},
+    };
+    local best = search(data, start.x, start.y, dir_x, dir_y, 0, 73432);
+
+    search_paths(data, start.x, start.y, dir_x, dir_y, 0, best);
+
+    "clear path";
+    loop (local y=0,y<height,y=y+1) {
+        local row = get(input,y);
+        loop (local x=0,x<width,x=x+1) {
+            local value = get(row, x);
+            if (value == get("@",0)) {
+                set(row,x,".");
+            }
+        }
+    }
+
+    "visualize good spots"
+    local props = properties(data.best_spots);
+    local count = 0;
+    loop (local i=0, i<length(props), i=i+1) 
+    {
+        local propname = get(props,i);
+        local spot = get(data.best_spots, propname);
+        if (spot.score == best) {
+            count = count + 1;
+            set(get(data.input, spot.y), spot.x, get("O",0));
+        }
+    }
+
+    "print";
+    loop (local y=0, y<height, y=y+1) {
+        log(get(input,y));
+    }
+    
+    "reset start and end point";
+    set(get(input, start.y), start.x, get("S",0));
+    set(get(input, end.y), end.x, get("E",0));
+
+    return count;
+};
+
+
+cases = [
+    { fn:part1, out:1, in: [
+        "####",
+        "#SE#",
+        "####",
+    ]},
+    { fn:part1, out:2, in: [
+        "#####",
+        "#S.E#",
+        "#####",
+    ]},
+    { fn:part1, out:2001, in: [
+        "####",
+        "#ES#",
+        "####",
+    ]},
+    { fn:part1, out:1002, in: [
+        "####",
+        "#.E#",
+        "#S.#",
+        "####",
+    ]},
+    { fn:part1, out:1001, in: [
+        "####",
+        "#E.#",
+        "#S.#",
+        "####",
+    ]},
+    { fn:part1, out:2004, in: [
+        "####",
+        "#E_#",
+        "##_#",
+        "#S_#",
+        "####",
+    ]},
+    { fn:part1, out:2004, in: [
+        "#####",
+        "#E__#",
+        "##__#",
+        "#S__#",
+        "#####",
+    ]},
+    { fn:part2, out:2, in: [
+        "####",
+        "#SE#",
+        "####",
+    ]},
+    { fn:part2, out:12, in: [
+        "########",
+        "#__#___#",
+        "##___#E#",
+        "#S_#___#",
+        "########",
+    ]},
+    { fn:part2, out:14, in: [
+        "#########",
+        "#__#____#",
+        "##___##E#",
+        "#S_#____#",
+        "#########",
+    ]},
+    { fn:part2, out:16, in: [
+        "#########",
+        "#_____#E#",
+        "#_#_#_#_#",
+        "#S#_____#",
+        "#########",
+    ]},
+];
