@@ -1,0 +1,85 @@
+
+rand = x -> {
+    local mask=binseq(16777216-1);
+    x=binseq(x);
+    x=and(mask, xor(x,binseq(integer(x)*64)));
+    x=and(mask, xor(x,binseq(integer(x)/32)));
+    x=and(mask, xor(x,binseq(integer(x)*2048)));
+    integer(x);
+};
+
+rand_n = (x,n) -> {
+    loop (local i=0, i<n, i=i+1) {
+        x = rand(x);
+    }
+    return x;
+};
+
+rand_2000 = x -> rand_n(x, 2000);
+
+part_1 = in -> reduce(map(in,rand_2000), (a,b) -> a+b);
+
+part_2 = (n,MAX) -> {
+    if (MAX==void) MAX=2000;
+    local N = array(MAX);
+    local B = array(MAX);
+    local S = {};
+    local best_key = "";
+    local best_score = 0;
+    loop (local i=0, i<length(in), i=i+1) {
+        local x = get(in, i);
+        local SI = {};
+        local prevdigit=999;
+        loop (local j=0, j<MAX, j=j+1) {
+            digit=x-x/10*10;
+            set(B,j,digit);
+            set(N,j,digit-prevdigit);
+            prevdigit=digit;
+            x=rand(x);
+        }
+        loop (local k=4, k<MAX, k=k+1)
+        {
+            local key=string(get(N,k-3))+","+
+                string(get(N,k-2))+","+
+                string(get(N,k-1))+","+
+                string(get(N,k));
+            local value=get(B,k);
+            local score=get(SI,key);
+            if (score == void) {
+                set(SI,key,value);
+            }
+        }
+        local keys = properties(SI);
+        loop (local i=0,i<length(keys),i=i+1) {
+            local key = get(keys,i);
+            local totalscore = get(S,key);
+            if (totalscore == void) totalscore = 0;
+            totalscore = totalscore + get(SI,key);
+            set(S,key,totalscore);
+            if (totalscore > best_score) 
+            {
+                best_score = totalscore;
+                best_key = key;
+            }
+        }
+        print(best_score," ",best_key," ",i,"/",length(in),"  \r");
+    }
+    return best_score;
+};
+
+
+test_rand_n = input -> rand_n(get(input,0), get(input,1));
+
+cases = [
+    { fn:rand, in:1, out:137283 },
+    { fn:rand, in:137283, out:12980423 },
+    { fn:rand, in:16777215, out:127038 },
+    { fn:x->rand_n(1,x), in:1, out:137283 },
+    { fn:x->rand_n(1,x), in:2, out:12980423 },
+    { fn:x->rand_n(1,x), in:2000, out:8685429 },
+    { fn:rand_2000, in:2, out:5976613 },
+    { fn:part_1, in:[1], out:8685429 },
+    { fn:part_1, in:[1,2], out:8685429+5976613 },
+    { fn:in->part_2(in,10), in:[1], out:9 },
+    { fn:in->part_2(in,100), in:[5,9], out: 11 },
+];
