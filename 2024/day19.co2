@@ -1,0 +1,85 @@
+    
+search = (avail, design, pos) -> {
+    local len = length(design);
+    if (pos == len) return 1;
+    if (pos > len) return 0;
+    loop (local i=0, i<length(avail), i=i+1) {
+        local token = get(avail, i);
+        local found = TRUE;
+        loop (local j=0, j<length(token), j=j+1) {
+            local k = pos+j;
+            if (k >= len) {
+                found = FALSE;
+                break;
+            }
+            if (get(design,k) != get(token,j))
+            {
+                found = FALSE;
+                break;
+            }
+        }
+        if (found) {
+            if (search(avail, design, pos + length(token)) > 0){
+                return 1;
+            }
+        }
+    }
+    return 0;
+};
+
+
+search2 = (avail, design, pos) -> {
+    local len = length(design);
+    local sum = 0;
+    if (pos == len) return 1;
+    if (pos > len) return 0;
+    loop (local i=0, i<length(avail), i=i+1) {
+        local token = get(avail, i);
+        local found = TRUE;
+        loop (local j=0, j<length(token), j=j+1) {
+            local k = pos+j;
+            if (k >= len) {
+                found = FALSE;
+                break;
+            }
+            if (get(design,k) != get(token,j))
+            {
+                found = FALSE;
+                break;
+            }
+        }
+        if (found) {
+            sum =  sum + search2(avail, design, pos + length(token));
+        }
+    }
+    return sum;
+};
+
+part1 = input -> reduce(input.designs, (acc, design, i) -> {
+    print("reduce ",i,"\r");
+    return acc + search(input.avail, design, 0);
+}, 0);
+
+
+part2 = input -> reduce(input.designs, (acc, design, i) -> {
+    print("reduce ",i,"\r");
+    return acc + search2(input.avail, design, 0);
+}, 0);
+
+cases = [
+    { fn:part1, in:{ avail:[], designs:[] }, out:0 },
+    { fn:part1, in:{ avail:["r"], designs:["r"] }, out:1 },
+    { fn:part1, in:{ avail:["r"], designs:["rw"] }, out:0 },
+    { fn:part1, in:{ avail:["r","w"], designs:["rw"] }, out:1},
+    { fn:part1, in:{ avail:["rg","wg"], designs:["rgwg"] }, out:1},
+    { fn:part1, in:{ avail:["r"], designs:["r","rr","rrr"] }, out:3},
+    { fn:part1, in:{ avail:["rrr"], designs:["r","rr","rrr"] }, out:1},
+    { fn:part2, in:{ avail:["r"], designs:["r"] }, out:1 },
+    { fn:part2, in:{ avail:["r", "g", "b", "rgb"], designs:["rgb"] }, out:2 },
+
+    { fn:part2, in:{ avail:example_avail, designs:example_desginds }, out:16},
+    { fn:part1, in:{ avail:example_avail, designs:example_desginds }, out:6},
+    { fn:part2, in:{ avail:puzzle_a, designs:puzzle_d }, out:6},
+    { fn:part1, in:{ avail:puzzle_a, designs:puzzle_d }, out:265},
+
+];
