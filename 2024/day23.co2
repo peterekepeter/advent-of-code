@@ -1,0 +1,177 @@
+
+assert = (expr,message) -> {
+    if (not(expr)) {
+        if (message==void) message = "assert failed!";
+        log(message);
+    } 
+    else {
+        log("passed",message);
+    }
+};
+
+assert_equals = (a,b,message) -> {
+    if (not(equals(a,b))) {
+        if (message==void) message = "assert_equals failed!";
+        log(message,"expected:\n",a,"but found:\n",b);
+    }
+    else {
+        log("passed",message);
+    }
+};
+assert_equals( [], [], "assert_equals works" );
+
+graph_init = (_) -> {
+    return {};
+};
+assert( graph_init() != void, "graph_init returns something");
+
+graph_node_init = (name) -> ({ 
+    name: name,
+    edges: {},
+});
+
+graph_find_node = (G,name) -> get(G,name);
+
+graph_get_or_add_node = (G,name) -> {
+    local node = graph_find_node(G,name);
+    if ( node != void ) return node;
+    node = graph_node_init(name);
+    set(G,name,node);
+    return node;
+};
+
+graph_node_connect = (N, to) -> {
+    set(N.edges, to, bit(1));
+    return N;
+};
+
+assert_equals( 
+    graph_get_or_add_node({}, "a"), 
+    { name:"a", edges:{} }, 
+    "adds graph node" 
+);
+
+graph_add_edge = (G,from,to) -> {
+    local a = graph_get_or_add_node(G,from);
+    local b = graph_get_or_add_node(G,to);
+    graph_node_connect(a,to);
+    graph_node_connect(b,from);
+};
+assert( 
+    graph_add_edge({},"a","b") != void, 
+    "add graph edge returns something",
+);
+
+has_t = str -> get(str,0) == get("t",0);
+
+part1 = in -> {
+    local G = graph_init();
+    loop (local i=0, i<length(in), i=i+1) {
+        local pair = get(in, i);
+        local a = get(pair, 0);
+        local b = get(pair, 1);
+        graph_add_edge(G,a,b);
+    }
+    local count = 0;
+    local nodenames = properties(G);
+    local nodecount = length(nodenames);
+    loop (local i=0, i<nodecount, i=i+1)
+    {
+        local ith_name = get(nodenames,i);
+        local ith = graph_find_node(G, ith_name);
+        loop (local j=i+1, j<nodecount, j=j+1)
+        {
+            if (i == j) continue;
+            local jth_name = get(nodenames,j);
+            if (get(ith.edges, jth_name) == void) continue;
+            local jth = graph_find_node(G, jth_name);
+            loop (local k=j+1, k<nodecount, k=k+1)
+            {
+                if (i == k) continue;
+                if (j == k) continue;
+                local kth_name = get(nodenames,k);
+                if (get(jth.edges, kth_name) == void) continue;
+                if (get(ith.edges, kth_name) == void) continue;
+                // found unique ring of 3
+                if ((has_t(ith_name))+(has_t(jth_name))+(has_t(kth_name))) {
+                    count = count + 1;
+                }
+            }
+        }
+        print("progress ",i," / ",length(nodenames),"\r");
+    }
+    return count;
+};
+
+graph_colorize = (G,name,color) -> {
+    local node = graph_find_node(G,name);
+    if (node.color != void) return 0;
+    node.color = color;
+    local count = 0;
+    local nextnodes = properties(node.edges);
+    loop (local i=0, i<length(nextnodes), i=i+1) {
+        local next = get(nextnodes,i);
+        count = count + graph_colorize(G,next,color);      
+    } 
+    return count;
+};
+
+find_group = (G,group,name) -> {
+    if (get(group,name) != void) return 0;
+    local node = get(G,name);
+    local needs = filter(properties(group), g->get(group,g) == TRUE);
+    loop (local i=0, i<length(needs), i=i+1) {
+        local needname = get(needs, i);
+        if (get(node.edges, needname) == void) {
+            return 0;
+        }
+    }
+    set(group, name, TRUE);
+    local next = properties(node.edges);
+    local count = 1;
+    loop (local i=0, i<length(next), i=i+1) {
+        local nextname = get(next, i);
+        count = count + find_group(G,group,nextname);
+    }
+    return count;
+};
+
+part2 = in -> {
+    local G = graph_init();
+    loop (local i=0, i<length(in), i=i+1) {
+        local pair = get(in, i);
+        local a = get(pair, 0);
+        local b = get(pair, 1);
+        graph_add_edge(G,a,b);
+    }
+    local nodenames = properties(G);
+    local nodecount = length(nodenames);
+    local bestgroup = [];
+    local bestgroupsize = 0;
+    loop (local i=0, i<nodecount, i=i+1)
+    {
+        local ith_name = get(nodenames,i);
+        local groupnames = {};
+        local groupsize = find_group(G,groupnames,ith_name);
+        if (groupsize > bestgroupsize) {
+            bestgroupsize = groupsize;
+            bestgroup = filter(properties(groupnames),n->get(groupnames,n)==TRUE);
+        }
+        print("progress ", i, " ", groupsize, " ", bestgroup, " \r");
+    }
+    qsort(bestgroup);
+    local out="";
+    local sep="";
+    loop (local i=0,i<length(bestgroup),i=i+1) {
+        out = out + sep + get(bestgroup,i);
+        sep = ",";
+    }
+    return out;
+};
+
+cases = [
+    { fn:part1, in:[], out: 0 },
+    { fn:part1, in:[["t","a"],["a","b"],["b","t"],["b","x"]], out: 1 },
+    { fn:part1, in:[["x","a"],["a","b"],["b","x"],["b","x"]], out: 0 },
+    { fn:part2, in:[["t","a"],["a","b"],["b","t"],["y","x"]], out: "a,b,t" },
+];
