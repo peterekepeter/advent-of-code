@@ -1,0 +1,166 @@
+
+fill = (arr,value,from,to) -> {
+    if (from == void) from = 0;
+    if (to == void) to = length(arr);
+    loop (local i=from, i<to, i=i+1) {
+        set(arr,i,value);
+    }
+};
+
+parse = str -> {
+    local results = {keys:[],locks:[],height:0};
+    local len = length(str);
+    local x=0;
+    local y=0;
+    local heights=array(10);
+    fill(heights,-1);
+    local hashcount = 0;
+    local dotcount = 0;
+    local target = "";
+    local objectlength = 0;
+    local maxheight = 0;
+    loop (local i=0, i<len, i=i+1) {
+        local chr = get(str,i);
+        if (chr==get("#",0)) {
+            set(heights,x,get(heights,x)+1);
+            hashcount = hashcount + 1;
+            x=x+1;
+        }
+        if (chr==get(".",0))
+        {
+            dotcount = dotcount + 1;
+            x=x+1;
+        }
+        if (chr==get("\n",0)) {
+            if (target == "") {
+                if (x > 0)
+                {
+                    // first line of object
+                    target = "keys";
+                    if (dotcount == 0) target="locks";
+                    objectlength = dotcount + hashcount;
+                }
+            }
+            if (x == 0) {
+                if (y > 0)
+                {
+                    // end of object
+                    local obj = subseq(heights,objectlength,0);
+                    set(results, target, get(results,target)+[obj]);
+                    y=0;
+                    x=0;
+                    fill(heights,-1);
+                    target="";
+                }
+            }
+            else {
+                // continue parsing object
+                if (x > 0)
+                {
+                    x=0;
+                    hashcount = 0;
+                    dotcount = 0;
+                    y=y+1;
+                    if (y>maxheight) {
+                        maxheight=y;
+                    }
+                }   
+            }
+        }
+    }
+    if (x > 0)
+    {
+        x=0;
+        hashcount = 0;
+        dotcount = 0;
+        y=y+1;
+        if (y>maxheight) {
+            maxheight=y;
+        }
+    }
+    if (y > 0)
+    {
+        // end of object
+        local obj = subseq(heights,objectlength,0);
+        set(results, target, get(results,target)+[obj]);
+        y=0;
+        x=0;
+        fill(heights,-1);
+        target="";
+    }
+    results.height=maxheight-2;
+    return results;
+};
+
+fits = (key,lock,n) -> {
+    loop (local i=0, i<length(key), i=i+1) {
+        if (get(key,i)+get(lock,i)>n){
+            return 0;
+        } 
+    }
+    return 1;
+};
+
+part1 = in -> {
+    local p = parse(in);
+    local count = 0;
+    loop (local i=0, i<length(p.keys), i=i+1) {
+        local key = get(p.keys,i);
+        loop (local j=0, j<length(p.locks), j=j+1) {
+            local lock = get(p.locks,j);
+            count = count + fits(key,lock,p.height);
+        }
+        print("progress ",i," / ",length(p.keys)," \r");
+    }
+    return count;
+};
+
+
+cases = [
+    { fn:parse, in:"##\n.#", out:{locks:[[0,1]],keys:[],height:0} },
+    { fn:parse, in:".#\n##", out:{locks:[],keys:[[0,1]],height:0} },
+    { fn:parse, in:"#\n#\n\n#\n#", out:{locks:[[1],[1]],keys:[],height:0} },
+    { fn:parse, in:"
+        ........
+        #.......
+        ####....
+        ########
+    ", out:{locks:[],keys:[[2,1,1,1,0,0,0,0]],height:2} },
+    { fn:parse, in:"
+        ####
+        ##..
+        ....
+        
+        ....
+        ..##
+        ####
+    ", out:{locks:[[1,1,0,0]],keys:[[0,0,1,1]],height:1 } },
+    { fn:part1, in:"..\n.#\n##\n\n##\n#.\n..", out:1 },
+    { fn:part1, in:"
+        ..
+        .#
+        ##
+        
+        ##
+        #.
+        ..
+    ", out:1 },    
+    { fn:part1, in:"
+        .....
+        ..###
+        #####
+        
+        #####
+        ###..
+        .....
+    ", out:0 },
+    { fn:part1, in:"
+        .....
+        ###..
+        #####
+        
+        #####
+        ####.
+        .....
+    ", out:0 },
+];

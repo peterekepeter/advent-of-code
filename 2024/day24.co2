@@ -1,0 +1,87 @@
+
+part1 = in -> {
+    local initial_wires = properties(in.state);
+    local state = {};
+    loop (local i=0, i<length(initial_wires), i=i+1) 
+    {
+        local name = get(initial_wires, i);
+        local value = get(in.state, name);
+        local bit = FALSE;
+        if (value > 0) bit = TRUE;
+        set(state, name, bit);
+    }
+    loop {
+        local stable=TRUE;
+        loop (local i=0, i<length(in.ops), i=i+1) {
+            local op = get(in.ops, i);
+            local an = get(op, 0);
+            local on = get(op, 1);
+            local bn = get(op, 2);
+            local cn = get(op, 3);
+            local a = get(state, an);
+            local b = get(state, bn);
+            local c = get(state, cn);
+            if (a==void) continue;
+            if (b==void) continue;
+            local next_c = FALSE;
+            // log(an,on,bn,cn);
+            if (on == "AND") next_c = and(a,b);
+            if (on == "OR") next_c = or(a,b);
+            if (on == "XOR") next_c = xor(a,b);
+            if (c != next_c) {
+                stable=FALSE;
+                set(state,cn,next_c);
+            }
+        }        
+        if (stable) break;
+    };
+    local zstate = {};
+    local statenames = properties(state);
+    loop (local i=0, i<length(statenames), i=i+1) {
+        local name = get(statenames, i);
+        if (get(name,0) != get("z",0)) continue;
+        set(zstate,name,get(state,name));
+    }
+    local zstatenames = properties(zstate);
+    qsort(zstatenames);
+    log(zstate, zstatenames);
+    local result = 0;
+    loop(local i=length(zstatenames)-1,i>=0,i=i-1) {
+        local name = get(zstatenames,i);
+        local value = get(zstate, name);
+        result = result * 2 + integer(value);
+    }
+    return result;
+};
+
+noop = {
+    state: {},
+    ops: [],
+    out: 0,
+};
+
+one = {
+    state: { x00: 0, x01: 1 },
+    ops: [["x00", "XOR", "x01", "z00"]],
+    out: 1,
+};
+
+basic = {
+    state: {
+        x00: 1,
+        y00: 0,
+    },
+    ops: [
+        ["x00", "AND", "y00", "z00"],
+        ["x00", "OR", "y00", "z01"],
+        ["x00", "XOR", "y00", "z02"],
+    ],
+    out: 6,
+};
+
+
+cases = [
+    { fn:part1, in:noop, out:noop.out },
+    { fn:part1, in:one, out:one.out },
+    { fn:part1, in:basic, out:basic.out },
+];
