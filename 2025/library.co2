@@ -1,0 +1,219 @@
+FALSE = bit(0);
+TRUE = bit(1);
+
+apply = function(fn, data, context){
+    local len = length(data);
+    loop(local i = 0, i < len, i = i + 1){
+        fn(get(data, i),i,context);
+    };
+};
+ 
+map = (data, fn) -> {
+    local l = length(data);
+    local res = array(l);
+    loop ( local i=0, i<l, i=i+1 ) {
+        set(res,i,fn(get(data,i),i,data));
+    }
+    return res;
+};
+
+equals = function(a, b){
+    local ta = type(a);
+    local tb = type(b);
+    if (ta != tb) {
+        return FALSE;
+    }
+    if (ta == "array")
+    {
+        if (length(a) != length(b)) {
+            return FALSE;
+        }
+        loop (local i=0,i<length(a),i=i+1) {
+            if (equals(get(a,i),get(b,i)))
+            {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
+    if (ta == "object")
+    {
+        local pa = properties(a);
+        loop (local i=0, i<length(pa), i=i+1)
+        {
+            local prop = get(pa,i);
+            if (equals(get(a, prop), get(b, prop))) {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        local pb = properties(b);
+        loop (local i=0, i<length(pb), i=i+1)
+        {
+            local prop = get(pb,i);
+            if (equals(get(a, prop), get(b, prop))) {
+                continue;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
+    return a == b;
+};
+
+foreach = function(data, fun, context) {
+    apply(fun, data, context);
+}
+
+log = view;
+
+filter = function(data, fun, context){
+    local count = 0;
+    local result = array(length(data));
+	loop(local i = 0, i < length(data), i = i + 1){
+        local item = get(data,i);
+        if (fun(item, context)){
+            set(result, count, item);
+            count = count + 1;
+        };
+	};
+    return head(result, count);
+};
+
+split = (str, sep) -> {
+    local chr=get(sep, 0);
+    local idx=0;
+    local j=0;
+    local result = array(count(str, chr) + 1);
+    loop ((idx=indexof(str, chr)) != -1)  
+    {
+        set(result, j, head(str, idx));
+        str=tail(str, length(str) - idx -1);
+        j = j+1;
+    }
+    set(result, j, str);
+    return result;
+};
+
+indexof = (seq, item) -> {
+    local i=0;
+    local l=length(seq);
+    loop (i<l, i=i+1) {
+        if (get(seq, i) == item) return i;
+    }
+    return -1;
+};
+
+reduce = (seq, fn, accum) -> {
+    local i=0;
+    local l=length(seq);
+    if (length(seq) == 0) {
+        return accum;
+    }
+    if (type(accum) == "void") {
+        i = 1;
+        accum = get(seq, 0);
+    }
+    loop (i<l, i=i+1) {
+        accum = fn(accum, get(seq, i), i);
+    }
+    return accum;
+};
+
+scan = (seq, fn, accum) -> {
+    local i=0;
+    local l=length(seq);
+    local result=array(l);
+    if (l == 0) {
+        return result;
+    }
+    if (type(accum) == "void") {
+        i = 1;
+        accum = get(seq, 0);
+        set(result, 0, accum);
+    }
+    loop (i<l, i=i+1) {
+        accum = fn(accum, get(seq, i), i);
+        set(result, i, accum);
+    }
+    return result;
+};
+
+flatten = (arrays) -> {
+    local totalsize = 0;
+    local len = length(arrays);
+    loop (local i=0,i<len,i=i+1)
+    {
+        totalsize = totalsize + length(get(arrays,i));
+    }
+    local result = array(totalsize);
+    local k = 0;
+    loop (local i=0,i<len,i=i+1) {
+        local row = get(arrays, i);
+        local alen = length(row);
+        loop (local j=0, j<alen, j=j+1) 
+        {
+            set(result,k,get(row,j));
+            k=k+1;
+        }
+    }
+    return result;
+};
+
+flatmap = (data, fn) -> flatten(map(data, fn));
+
+count = (seq, item) -> {
+    local i=0;
+    local c=0;
+    local l=length(seq);
+    loop (i<l, i=i+1) {
+        if (get(seq, i) == item)
+        {
+            c=c+1;
+        }
+    }
+    return c;
+};
+
+qsort = (list, a, b) -> {
+    if (a == void) {
+        a = 0;
+    }
+    if (b == void) {
+        b = length(list);
+    }
+    local j=b-1; 
+    if (j <= a) {
+        return;
+    }
+    local pivot = get(list, (a+b)/2);
+    
+    local iv=void;
+    local jv=void;
+    loop ( local i=a, i<b, i=i+1 ) 
+    {
+        iv = get(list, i);
+        if ( pivot <= iv ) {
+            loop ( j>i, j=j-1 )
+            {
+                jv = get(list, j);
+                if ( jv <= pivot )
+                {
+                    set(list, j, iv);
+                    set(list, i, jv);
+                    break;
+                }
+            }
+        }
+    }
+    qsort(list, a, j);
+    qsort(list, j, b);
+    return;
+};

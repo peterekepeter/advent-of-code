@@ -1,0 +1,62 @@
+
+part1(x) = count_zeroes(rotations(x));
+
+count_zeroes(x) = reduce(x, (acc,y) -> acc + integer(y==0), 0);
+
+rotations(x) = scan(parse(x), (a,b) -> modulo(a+b,100), 50);
+
+parse(a) = map(a, x -> tokensign(x) * integer(subseq(x, 99, 1)));
+
+tokensign(x) = integer(get(x,0) == get("R", 0)) * 2 - 1;
+
+modulo = (x,y) -> {
+    loop (x>=y) x=x-y;
+    loop (x<0) x=x+y;
+    return x;
+};
+
+part2 = (a) -> {
+local p = parse(a);
+    local s = 50;
+    local i = 0;
+    local l = length(a);
+    local count = 0;
+    loop(i<l, i=i+1)
+    {
+        local rotate = get(p,i);
+        loop (rotate < 0) 
+        {
+            rotate = rotate + 1;
+            s = s - 1;
+            if (s == 0) count = count + 1;
+            if (s == -1) s = 99;
+        }
+        loop (rotate > 0) 
+        {
+            rotate = rotate - 1;
+            s = s + 1;
+            if (s == 100) s = 0;
+            if (s == 0) count = count + 1;
+        }
+    }
+    return count;
+};
+
+cases = [
+    { fn: tokensign, in: "L1", out: -1 },
+    { fn: tokensign, in: "R1", out: +1 },
+    { fn: parse, in: ["R1"], out: [1] },
+    { fn: parse, in: ["L1"], out: [-1], },
+    { fn: parse, in: ["R10", "L13", "R42"], out: [+10, -13, +42], },
+    { fn: part1, in: [], out: 0 },
+    { fn: part1, in: ["L50"], out: 1 },
+    { fn: part1, in: ["L50","R10","L10"], out: 2 },
+    { fn: part1, in: ["R50"], out: 1 },
+    { fn: part2, in: ["L100"], out: 1 },
+    { fn: part2, in: ["R100"], out: 1 },
+    { fn: part2, in: ["L50"], out: 1 },
+    { fn: part2, in: ["R200"], out: 2 },
+    { fn: part2, in: ["L150"], out: 2 },
+    { fn: part2, in: ["R150"], out: 2 },
+    { fn: part2, in: ["L50","L50"], out: 1 },
+];

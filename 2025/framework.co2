@@ -1,0 +1,20 @@
+
+
+test = function(case, index){
+    "Requires solution(case) to be defined";
+    local fn = get(case, "fn");
+    local in = get(case, "in");
+    local out = get(case, "out");
+    local time = clock();
+    local result2 = fn(in);
+    time = clock() - time;
+    local time_str = "(" + string(time/1000000) + "ms)";
+    if (equals(result2, out)){
+        view("case", index, "passed with", result2, time_str);
+    } else {
+        view("case", index, "FAILED with", result2, "while expecting", out, time_str);
+        exit();
+    };
+};
+
+apply(test, cases);
