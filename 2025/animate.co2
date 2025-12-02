@@ -1,0 +1,109 @@
+
+buffer=array(9999);
+list=void;
+last=void;
+t=0;
+
+emit_frame = (s, count, label) -> {
+    local node = {s:s,count:count,label:label,next:void,t:t};
+    if (list == void) list = node;
+    if (last != void) last.next = node;
+    last = node;
+    t=t+1;
+};
+
+input = [
+"L70",
+"R25",
+"L15",
+"R65",
+"L70",
+"R15",
+"L10",
+"R20",
+"L10",
+"R35",
+];
+
+part2(input); // record all frames for animation
+
+
+print("<svg width='400' height='400' xmlns='http://www.w3.org/2000/svg'>\n");
+print(" <style>\n");
+print("  .bg{fill:#000}");
+print("  .marker{stroke:#333;stroke-width:2px;}\n");
+print("  .txt{fill:white;text-anchor:middle;font-family:Arial;font-size:24px;}\n");
+print("  .arrow{fill:#412;stroke:#e29;stroke-width:1.5px;transition: fill 500ms ease-out, stroke 500ms ease-out}\n");
+print("  .arrow.atzero{fill:#fff;stroke:#fff;stroke-width:1.5px;transition: fill 1ms linear, stroke 1ms linear}\n");
+print(" </style>\n");
+print(" <rect class='bg' x='0' y='0' width='400' height='400'/>\n");
+print(" <g transform='translate(200,200)'>\n");
+print("  <circle class='marker' x='0' y='0' r='199'/>\n");
+print("  <circle class='marker' x='0' y='0' r='156'/>\n");
+print("  <circle class='marker' x='0' y='0' r='25'/>\n");
+
+loop (i=0, i<100, i=i+5) {
+    local deg = float(i)*360.0/100.0;
+    local degstr = string(deg);
+    local istr = string(i);
+    print("  <text x='0' y='-170' class='txt' transform='rotate("+degstr+")'>"+istr+"</text>\n");
+}
+
+loop (i=0, i<100, i=i+1) {
+    local deg = float(i)*360.0/100.0;
+    local degstr = string(deg);
+    local istr = string(i);
+    print("  <line x1='0' y1='-150' x2='0' y2='-100' class='marker' transform='rotate("+degstr+")'></line>\n");
+}
+
+ms_per_frame = 50;
+
+print("  <polygon class='arrow' points='0,-150 15,15 0,35 -15,15' transform='rotate(180)'>\n");
+loop (n=list, n!=void, n=n.next)
+{
+    local deg = string(n.s*360/100);
+    local t=n.t;
+    local class="arrow";
+    local timing="begin='"+string(t*ms_per_frame)+"ms' dur='"+string(ms_per_frame)+"ms'";
+    if (n.s == 0) class="arrow atzero";
+    print("    <set attributeName='class' to='"+class+"' "+timing+"/>\n");
+    print("    <animateTransform attributeName='transform' type='rotate' from='"+deg+"' to='"+deg+"' "+timing+"/>\n");
+}
+print("  </polygon>\n");
+
+loop (n=list, n!=void, n=n.next)
+{
+    local str = string(n.s);
+    local t=n.t;
+    local timing="begin='"+string(t*ms_per_frame)+"ms' dur='"+string(ms_per_frame)+"ms'";
+    print(" <text y='70' class='txt' visibility='hidden'>\n ");
+    print(str);
+    print("\n <set attributeName='visibility' from='hidden' to='visible' "+timing+"/>\n");
+    print(" </text>\n");
+}
+
+loop (n=list, n!=void, n=n.next)
+{
+    local str = string(n.label);
+    local t=n.t;
+    local timing="begin='"+string(t*ms_per_frame)+"ms' dur='"+string(ms_per_frame)+"ms'";
+    print(" <text x='-60' y='10' class='txt' visibility='hidden'>\n ");
+    print(str);
+    print("\n <set attributeName='visibility' from='hidden' to='visible' "+timing+"/>\n");
+    print(" </text>\n");
+}
+
+loop (n=list, n!=void, n=n.next)
+{
+    local str = string(n.count);
+    local t=n.t;
+    local timing="begin='"+string(t*ms_per_frame)+"ms' dur='"+string(ms_per_frame)+"ms'";
+    print(" <text x='60' y='10' class='txt' visibility='hidden'>\n ");
+    print(str);
+    print("\n <set attributeName='visibility' from='hidden' to='visible' "+timing+"/>\n");
+    print(" </text>\n");
+}
+
+
+print("</g>\n");
+print("</svg>\n");

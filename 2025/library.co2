@@ -217,3 +217,5 @@ qsort = (list, a, b) -> {
     qsort(list, j, b);
     return;
 };
+
+emit_frame() = void;

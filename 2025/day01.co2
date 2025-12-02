@@ -21,6 +21,7 @@ local p = parse(a);
     local i = 0;
     local l = length(a);
     local count = 0;
+    emit_frame(s, count, "");
     loop(i<l, i=i+1)
     {
         local rotate = get(p,i);
@@ -30,6 +31,7 @@ local p = parse(a);
             s = s - 1;
             if (s == 0) count = count + 1;
             if (s == -1) s = 99;
+            emit_frame(s, count, get(a,i));
         }
         loop (rotate > 0) 
         {
@@ -37,6 +39,7 @@ local p = parse(a);
             s = s + 1;
             if (s == 100) s = 0;
             if (s == 0) count = count + 1;
+            emit_frame(s, count, get(a,i));
         }
     }
     return count;
