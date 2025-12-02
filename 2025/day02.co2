@@ -1,0 +1,14 @@
+
+parse_input(x) = map(split(x,","),parse_item);
+
+parse_item(x) = map(split(x,"-"),to_int);
+
+to_int(x) = integer(x);
+
+range(n) = map(array(get(n,1)),(_,i)->n.get(0)+i);
+
+cases = [
+    {fn:parse_item,in:"10-20",out:[10,20]},
+    {fn:parse_input,in:"10-20,30-40",out:[[10,20],[30,40]]},
+    {fn:range,in:[10,13],out:[10,11,12,13]},
+];
