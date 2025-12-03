@@ -1,20 +1,55 @@
 
-// best_jolt(x) 
+part1(x) = reduce(x, (acc,y) -> acc + best_jolt(y), 0);
 
-largest = (x,start,end) -> {
+part2(x) = reduce(x, (acc,y) -> acc + best_jolt_2(y), 0);
+
+best_jolt = (x) -> {
+    local l = length(x);
+    local i = largest_index(x,0,l-1);
+    local j = largest_index(x,i+1,l);
+    return (get(x,i)-48)*10+get(x,j)-48;
+};
+
+best_jolt_2 = (x) -> {
+    local i=0;
+    local l=length(x);
+    local a=0;
+    local n=0;
+    loop (i<12, i=i+1)
+    {
+        local b = largest_index(x,a,l-11+i);
+        n = n*10+get(x,b)-48;
+        a=b+1;
+    }
+    return n;
+};
+
+
+largest_index = (x,start,end) -> {
     local i=0;
     local v=0;
+    local vi=0;
     loop(i=start,i<end,i=i+1)
     {
         local next=get(x,i);
-        if (next > v) v=next;
+        if (next > v) { 
+            v=next;
+            vi=i;
+        }
     }
-    return v-48;
+    return vi;
 };
 
-test_largest(x) = largest(x,0,length(x));
+test_largest(x) = largest_index(x,0,length(x));
 
 cases = [
-    { fn:test_largest, in:"123", out:3 },
-    // { fn:best_jolt, in:"123", out:23 },
+    { fn:test_largest, in:"123", out:2 },
+    { fn:best_jolt, in:"123", out:23 },
+    { fn:best_jolt, in:"19141", out:94 },
+    { fn:best_jolt_2, in:"9999888844441111", out:999988884444 },
+    { fn:best_jolt_2, in:"1111999988887777", out:999988887777 },
+    { fn:best_jolt_2, in:"99918881777155514441", out:999888777555 },
+    // { fn:part1, in:example_input, out:357 },
+    // { fn:part1, in:puzzle_input, out:357 },
+    { fn:part2, in:puzzle_input, out:357 },
 ];
