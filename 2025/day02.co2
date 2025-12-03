@@ -1,7 +1,9 @@
 
-part1(x) = reduce(parse_input(x), (a,y)->reduce(range(y),(a,z,i)->a+z*integer(is_invalid(z)),0)+a,0);
+part1(x) = solve(x, is_invalid);
 
-part2(x) = reduce(parse_input(x), (a,y)->reduce(range(y),(a,z,i)->a+z*integer(is_invalid2(z)),0)+a,0);
+part2(x) = solve(x, is_invalid2);
+
+solve(x, criteria) = reduce(parse_input(x), (a,y)->reduce(range(y),(a,z,i)->a+z*integer(criteria(z)),0)+a,0);
 
 is_invalid(x) = is_repeat(x);
 
@@ -93,4 +95,5 @@ cases = [
     {fn:is_invalid2,in:111,out:TRUE},
     {fn:is_invalid2,in:123123123,out:TRUE},
     {fn:is_invalid2,in:1231234123,out:FALSE},
+    {fn:part2,in:"110-112",out:111},
 ];
