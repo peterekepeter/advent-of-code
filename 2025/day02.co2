@@ -1,14 +1,96 @@
 
+part1(x) = reduce(parse_input(x), (a,y)->reduce(range(y),(a,z,i)->a+z*integer(is_invalid(z)),0)+a,0);
+
+part2(x) = reduce(parse_input(x), (a,y)->reduce(range(y),(a,z,i)->a+z*integer(is_invalid2(z)),0)+a,0);
+
+is_invalid(x) = is_repeat(x);
+
+digit_count = x -> { if (x>0) 1+digit_count(x/10); else 0; };
+
+is_even(x) = x/2*2==x;  
+
 parse_input(x) = map(split(x,","),parse_item);
 
 parse_item(x) = map(split(x,"-"),to_int);
 
 to_int(x) = integer(x);
 
-range(n) = map(array(get(n,1)),(_,i)->n.get(0)+i);
+range(n) = map(array(get(n,1)-get(n,0)+1), (_,i)->i+get(n,0));
+
+is_repeat = (x) -> {
+    if (is_even(digit_count(x))) {
+        local exploded = explode(x);
+        local l = length(exploded);
+        local hl = l / 2;
+        if (equals(subseq(exploded,hl,0),subseq(exploded,hl,hl))) 
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+};
+
+is_invalid2 = (x) -> {
+    local l = digit_count(x);
+    local hl = l/2;
+    local k=0;
+    local exploded = explode(x);
+    loop (k=1,k<=hl,k=k+1)
+    {
+        if (l/k*k==l) 
+        {
+            local i=k;
+            local eq=TRUE;
+            loop (eq*(i<l),i=i+k)
+            {
+                local j=0;
+                loop (j<k,j=j+1)
+                {
+                    if (get(exploded,j)!=get(exploded,i+j))
+                    {
+                        eq=FALSE;
+                        break;
+                    }
+                }
+            }
+            if (eq)
+            {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+};
+
+explode = (x) -> {
+    local l = digit_count(x);
+    local r = array(l);
+    local i = l - 1;
+    loop (x > 0) 
+    {
+        set(r,i,x-(x/10*10));
+        x = x / 10;
+        i = i - 1;
+    }
+    return r;
+};
 
 cases = [
     {fn:parse_item,in:"10-20",out:[10,20]},
     {fn:parse_input,in:"10-20,30-40",out:[[10,20],[30,40]]},
     {fn:range,in:[10,13],out:[10,11,12,13]},
+    {fn:digit_count,in:10,out:2},
+    {fn:is_even,in:1,out:FALSE},
+    {fn:is_even,in:0,out:TRUE},
+    {fn:is_even,in:3,out:FALSE},
+    {fn:explode,in:1234,out:[1,2,3,4]},
+    {fn:is_invalid,in:3,out:FALSE},
+    {fn:is_invalid,in:10,out:FALSE},
+    {fn:is_invalid,in:11,out:TRUE},
+    {fn:is_invalid,in:110,out:FALSE},
+    {fn:part1,in:"10-20",out:11},
+    {fn:part1,in:"11-33",out:66},
+    {fn:is_invalid2,in:111,out:TRUE},
+    {fn:is_invalid2,in:123123123,out:TRUE},
+    {fn:is_invalid2,in:1231234123,out:FALSE},
 ];
