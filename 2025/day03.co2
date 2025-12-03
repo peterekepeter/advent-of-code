@@ -1,0 +1,20 @@
+
+// best_jolt(x) 
+
+largest = (x,start,end) -> {
+    local i=0;
+    local v=0;
+    loop(i=start,i<end,i=i+1)
+    {
+        local next=get(x,i);
+        if (next > v) v=next;
+    }
+    return v-48;
+};
+
+test_largest(x) = largest(x,0,length(x));
+
+cases = [
+    { fn:test_largest, in:"123", out:3 },
+    // { fn:best_jolt, in:"123", out:23 },
+];
