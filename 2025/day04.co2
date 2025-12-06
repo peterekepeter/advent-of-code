@@ -1,5 +1,6 @@
 
 PAPER_ROLL = get("@",0);
+EMPTY = get(".", 0);
 
 part1(x) = reduce(x, (acc, row, row_index) -> acc + 
     reduce(row, (acc_2, char, col_index) -> acc_2 + 
@@ -18,6 +19,53 @@ count_neighbours(x, row, col) =
     get_row_col(x, row-1, col+1) + 
     get_row_col(x, row, col+1) + 
     get_row_col(x, row+1, col+1) ;
+
+copy_input(x) = map(x,copy_str);
+
+part2 = x -> {
+    x = copy_input(x);
+    local removed = 0;
+    local keep_removing = TRUE;
+    // debug_print_data("BEFORE", x);
+    loop (keep_removing)
+    {
+        keep_removing = FALSE;
+        local row = 0;
+        local row_count = length(x);
+        loop (row < row_count, row = row + 1)
+        {
+            local row_data = get(x,row);
+            local col = 0;
+            local col_count = length(row_data);
+            loop (col < col_count, col = col + 1)
+            {
+                if (get(row_data, col) == PAPER_ROLL)
+                {
+                    local neighbours = count_neighbours(x, row, col);
+                    if (neighbours < 4) {
+                        set(row_data, col, EMPTY);
+                        removed = removed + 1;
+                        keep_removing = TRUE;
+                    }
+                }
+            }
+        }
+        // debug_print_data("REMOVING", x);
+    }
+    return removed;
+};
+
+debug_print_data = (label, x) -> {
+    local row = 0;
+    local row_count = length(x);
+    view(label);
+    loop (row < row_count, row = row + 1)
+    {
+        view("  ", get(x,row));
+    }
+};
+
+copy_str(x) = subseq(x,length(x),0);
 
 get_row_col = (x,r,c) -> {
     if (r<0) return 0;
@@ -58,10 +106,20 @@ basic_blocked_diagonal = [
     "@.@",
 ];
 
+basic_stable = [
+    ".@@.",
+    "@@@@",
+    "@@@@",
+    ".@@.",
+];
+
 cases = [
     { fn:part1, in: basic_input, out: 1 },
     { fn:part1, in: basic_four, out: 4 },
     { fn:part1, in: basic_blocked_1, out: 4 },
     { fn:part1, in: basic_not_blocked, out: 4 },
     { fn:part1, in: basic_blocked_diagonal, out: 4 },
+    { fn:copy_input, in: basic_input, out: basic_input },
+    { fn:part2, in: basic_blocked_diagonal, out: 5 },
+    { fn:part2, in: basic_stable, out: 0 },
 ];
