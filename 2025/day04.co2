@@ -1,0 +1,67 @@
+
+PAPER_ROLL = get("@",0);
+
+part1(x) = reduce(x, (acc, row, row_index) -> acc + 
+    reduce(row, (acc_2, char, col_index) -> acc_2 + 
+        check(x, char, row_index, col_index), 
+        0), 
+    0);
+
+check(x, c, row, col) = integer((count_neighbours(x,row,col) < 4) * (PAPER_ROLL == c));
+
+count_neighbours(x, row, col) = 
+    get_row_col(x, row-1, col-1) + 
+    get_row_col(x, row, col-1) + 
+    get_row_col(x, row+1, col-1) + 
+    get_row_col(x, row-1, col) + 
+    get_row_col(x, row+1, col) + 
+    get_row_col(x, row-1, col+1) + 
+    get_row_col(x, row, col+1) + 
+    get_row_col(x, row+1, col+1) ;
+
+get_row_col = (x,r,c) -> {
+    if (r<0) return 0;
+    if (c<0) return 0;
+    if (r>=length(x)) return 0;
+    local row = get(x,r);
+    if (c>=length(row)) return 0;
+    return integer(get(row,c) == PAPER_ROLL);
+};
+
+basic_input = [
+    "...",
+    ".@.",
+    "...",
+];
+
+basic_four = [
+    ".@.",
+    "@.@",
+    ".@.",
+];
+
+basic_blocked_1 = [
+    ".@.",
+    "@@@",
+    ".@.",
+];
+
+basic_not_blocked = [
+    ".@.",
+    "@@@",
+    "...",
+];
+
+basic_blocked_diagonal = [
+    "@.@",
+    ".@.",
+    "@.@",
+];
+
+cases = [
+    { fn:part1, in: basic_input, out: 1 },
+    { fn:part1, in: basic_four, out: 4 },
+    { fn:part1, in: basic_blocked_1, out: 4 },
+    { fn:part1, in: basic_not_blocked, out: 4 },
+    { fn:part1, in: basic_blocked_diagonal, out: 4 },
+];
