@@ -102,6 +102,32 @@ split = (str, sep) -> {
     return result;
 };
 
+split_continuous = (str, sep) -> {
+    local chr=get(sep,0);
+    local i=0;
+    local l=length(str);
+    local result=array(l);
+    local count=0;
+    loop (i<l)
+    {
+        loop(i<l,i=i+1) {
+            if(get(str,i)!=chr) break;
+        }
+        local from=i;
+        loop(i<l,i=i+1) {
+            if(get(str,i)==chr) break;
+        }
+        local to=i;
+        if (from!=to)
+        {
+            local tmp=subseq(str,to-from,from);
+            set(result,count,tmp);
+            count = count + 1;
+        }
+    }  
+    return head(result, count);
+};
+
 indexof = (seq, item) -> {
     local i=0;
     local l=length(seq);

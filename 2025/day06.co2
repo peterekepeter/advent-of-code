@@ -1,0 +1,44 @@
+
+part1(x) = solve(map(x, parse_operators));
+
+solve(x) = solve_ops(get(x, length(x)-1), head(x, length(x) - 1));
+
+solve_ops(ops, data) = reduce(ops, (acc, op, i) -> acc + sum_or_product(op, i, data), 0);
+
+CHAR_PLUS = get("+", 0);
+CHAR_MULT = get("*", 0);
+
+sum_or_product = (op, i, data) -> {
+    local opchar = get(op, 0);
+    local j=0;
+    local l=length(data);
+    local accum=0;
+    if (opchar == CHAR_MULT) accum = 1;
+    loop (j<l,j=j+1)
+    {
+        local row = get(data, j);
+        local item = integer(get(row, i));
+        if (opchar == CHAR_MULT) 
+        {
+            accum = accum * item;
+        }
+        else 
+        {
+            accum = accum + item;
+        }
+    }
+    return accum;
+};
+
+parse_operators(x) = split_continuous(x, " ");
+
+parse_numbers(x) = map(split_continuous(x, " "), to_integer);
+
+to_integer(x) = integer(x);
+
+cases = [
+    { fn: parse_operators, in:"   +   *   +   * ", out:["+","*","+","*"] },
+    { fn: parse_numbers, in:"13  42 ", out:[13,42] },
+    { fn: part1, in:["1 1", "1 1", "+ +"], out:4 },
+    { fn: part1, in:["1 1", "1 1", "* *"], out:2 },
+];
