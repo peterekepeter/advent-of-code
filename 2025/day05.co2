@@ -1,0 +1,71 @@
+
+part1(x) = solve(parse_input(x));
+
+part2(x) = count_values(merge_ranges(get(parse_input(x),0)));
+
+solve(data) = reduce(get(data,1), (acc, x)->acc + integer(is_inside(get(data,0), x)), 0);
+
+is_inside = (ranges, x) -> {
+    return any(ranges, r -> (get(r,0) <= x) * (x <= get(r,1)) );
+};
+
+test_is_inside(a) = is_inside(get(a,0), get(a,1));
+
+parse_int(x) = integer(x);
+
+parse_range(x) = map(split(x,"-"), parse_int);
+
+parse_input(x) = [
+    map(subseq(x, indexof(x,""), 0), parse_range),
+    map(subseq(x, length(x), indexof(x, "") + 1), parse_int),
+];
+
+count_values(x) = reduce(x, (acc, r) -> acc + get(r,1)-get(r,0)+1, 0);
+
+merge_ranges(x) = reduce(x, append_range,[]);
+
+append_range = (acc, r) -> {
+    local start = get(r,0);
+    local end = get(r,1);
+    local i=0;
+    local l=length(acc);
+    loop (i<l, i=i+1)
+    {
+        local accrange = get(acc,i);
+        if (range_intersects(start, end, get(accrange,0), get(accrange,1)))
+        {
+            local merged = range_merge(start, end, get(accrange,0), get(accrange,1));
+            local before = subseq(acc,i,0);
+            local after = subseq(acc,l,i+1);
+            return append_range(before + after, merged);
+        }
+    }
+    return acc + [r];
+};
+
+range_merge(a0,a1,b0,b1) = [min(a0,b0), max(a1,b1)];
+
+min = (a,b) -> {
+    if (a<b) return a;
+    return b;
+};
+
+max = (a,b) -> {
+    if (a>b) return a;
+    return b;
+};
+
+range_intersects(a0,a1,b0,b1) = (b0 <= a1) * (a0 <= b1);
+
+cases = [
+    { fn: parse_range, in: "1-10", out: [1,10] },
+    { fn: parse_input, in: ["1-2","","3"], out: [[[1,2]],[3]] },
+    { fn: test_is_inside, in: [[[1,2]],1], out: TRUE },
+    { fn: test_is_inside, in: [[[1,2]],3], out: FALSE },
+    { fn: part1, in: ["1-2", "", "3"], out: 0 },
+    { fn: part1, in: ["1-9", "", "4"], out: 1 },
+    { fn: merge_ranges, in: [], out: [] },
+    { fn: merge_ranges, in: [[1,2],[3,4]], out: [[1,2],[3,4]] },
+    { fn: merge_ranges, in: [[1,4],[3,5]], out: [[1,5]] },
+    { fn: merge_ranges, in: [[1,2],[4,5],[2,4]], out: [[1,5]] },
+];
