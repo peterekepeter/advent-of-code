@@ -1,0 +1,129 @@
+
+CHAR_S = get("S", 0);
+CHAR_DOT = get(".", 0);
+CHAR_SPLIT = get("^", 0);
+CHAR_BEAM = get("|", 0);
+
+part1 = (data) -> {
+    local x=0;
+    local y=0;
+    local lx=length(get(data,0));
+    local ly=length(data);
+    local count = 0;
+    loop (y=1,y<ly,y=y+1)
+    {
+        local prevrow = get(data,y-1);
+        local row = get(data,y);
+        loop (x=0,x<lx,x=x+1)
+        {
+            local upchr = get(prevrow,x);
+            local chr = get(row,x);
+
+            if ((upchr == CHAR_S) + (upchr == CHAR_BEAM))
+            {
+                if (chr == CHAR_DOT)
+                {
+                    set(row,x,CHAR_BEAM);
+                }
+                if (chr == CHAR_SPLIT)
+                {
+                    count = count + 1;
+                    set(row,x-1,CHAR_BEAM);
+                    set(row,x+1,CHAR_BEAM);
+                }
+            }
+        }
+        view(row);
+    }
+    return count;
+};
+
+part2 = (data) -> {
+    local x=0;
+    local y=0;
+    local lx=length(get(data,0));
+    local ly=length(data);
+    local map=array(ly);
+    set(map,0,array(lx));
+    loop (x=0,x<lx,x=x+1)
+    {
+        set(get(map,0),x,0);
+    }
+    view(get(map,0));
+    loop (y=1,y<ly,y=y+1)
+    {
+        local prevrow = get(data,y-1);
+        local prevmaprow = get(map,y-1);
+        local row = get(data,y);
+        local maprow = array(lx);
+        set(map,y,maprow);
+        loop (x=0,x<lx,x=x+1)
+        {
+            set(maprow,x,0);
+        }
+        loop (x=0,x<lx,x=x+1)
+        {
+            local upchr = get(prevrow,x);
+            local chr = get(row,x);
+
+            if ((upchr == CHAR_S) + (upchr == CHAR_BEAM))
+            {
+                local value = get(prevmaprow,x) + integer(upchr == CHAR_S);
+                if ((chr == CHAR_DOT) + (chr == CHAR_BEAM))
+                {
+                    set(row,x,CHAR_BEAM);
+                    set(maprow,x,get(maprow,x)+value);
+                }
+                if (chr == CHAR_SPLIT)
+                {
+                    set(row,x-1,CHAR_BEAM);
+                    set(row,x+1,CHAR_BEAM);
+                    set(maprow,x+1,value);
+                    set(maprow,x-1,get(maprow,x-1)+value);
+                }
+            }
+        }
+        view(row, maprow);
+    }
+    local result = reduce(get(map,ly-1), (acc,v) -> acc + v, 0);
+    return result;
+};
+
+cases = [
+    { fn: part1, in: [
+        ".S.",
+        "...",
+    ], out: 0 },
+    { fn: part1, in: [
+        ".S.",
+        "...",
+        ".^.",
+    ], out: 1 },
+    { fn: part2, in: [
+        ".S.",
+        "...",
+    ], out: 1 },
+    { fn: part2, in: [
+        ".S.",
+        "...",
+        ".^.",
+    ], out: 2 },
+    { fn: part2, in: [
+        "..S..",
+        ".....",
+        "..^..",
+        ".....",
+        ".^.^.",
+    ], out: 4 },
+    { fn: part2, in: [
+        "..S..",
+        ".....",
+        "..^..",
+        ".....",
+        ".^.^.",
+        ".....",
+        "..^..",
+        ".....",
+        ".^.^.",
+    ], out: 10 },
+];
