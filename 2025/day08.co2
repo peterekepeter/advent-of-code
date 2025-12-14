@@ -7,7 +7,47 @@ parse_split_tokens(x) = split(x, ",");
 
 to_integer(x) = integer(x);
 
+distances(data,n) = {
+    view("data",data);
+    view(n,type(n));
+    local result=array(n);
+    local i=0;
+    local j=0;
+    local l=length(data);
+    local count = 0;
+    local worstd = 0;
+    loop (i=0,i<l,i=i+1)
+    {
+        loop (j=i+1,j<l,j=j+1)
+        {
+            local dist=vdist(get(data,i),get(data,j));
+            if (count<n) {
+                set(result,count,[i,j,dist]);
+                count = count+1;
+            }
+        }
+    }
+    view(get(result,0));
+    return result;
+};
+
+vdist(a,b) = {
+    local l=length(a);
+    local i=0;
+    local acc=0;
+    loop (i<l,i=i+1)
+    {
+        local s=get(a,i)-get(b,i);
+        acc = acc + s*s;
+    }
+    return acc;
+};
+
+test_distances(x) = distances(get(x,0), get(x,1));
+
 cases = [
     { fn: parse_line, in: "1,2,3", out: [1,2,3] },
     { fn: parse_lines, in: ["1,2,3","4,5,6"], out:[[1,2,3],[4,5,6]] },
+    { fn: test_distances, in: [["1,0,0","5,0,0"], 1], out: [[0,1,16]] },
 ];
+
