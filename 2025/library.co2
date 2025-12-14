@@ -7,7 +7,7 @@ apply = function(fn, data, context){
         fn(get(data, i),i,context);
     };
 };
- 
+
 map = (data, fn) -> {
     local l = length(data);
     local res = array(l);
@@ -220,40 +220,50 @@ any = (seq, fn) -> {
     return FALSE;
 };
 
-qsort = (list, a, b) -> {
-    if (a == void) {
-        a = 0;
+sorted(list, keyfn) = {
+    local identity = x->x;
+    local newlist = map(list, identity);
+    if (keyfn == void) {
+        keyfn = identity;
     }
-    if (b == void) {
-        b = length(list);
-    }
-    local j=b-1; 
+    local keys = map(list, keyfn);
+    qsortimp(keys, newlist, 0, length(list));
+    return newlist;
+};
+
+qsortimp(keys, data, a, b) = {
+    local j=b-1;
     if (j <= a) {
         return;
     }
-    local pivot = get(list, (a+b)/2);
-    
+    local pivot = get(keys, (a+b)/2);
+
     local iv=void;
     local jv=void;
-    loop ( local i=a, i<b, i=i+1 ) 
+    local id=void;
+    local jd=void;
+    loop ( local i=a, i<b, i=i+1 )
     {
-        iv = get(list, i);
+        iv = get(keys, i);
         if ( pivot <= iv ) {
             loop ( j>i, j=j-1 )
             {
-                jv = get(list, j);
+                jv = get(keys, j);
                 if ( jv <= pivot )
                 {
-                    set(list, j, iv);
-                    set(list, i, jv);
+                    id = get(data, i);
+                    jd = get(data, j);
+                    set(data, i, jd);
+                    set(data, j, id);
+                    set(keys, j, iv);
+                    set(keys, i, jv);
                     break;
                 }
             }
         }
     }
-    qsort(list, a, j);
-    qsort(list, j, b);
-    return;
+    qsortimp(keys, data, a, j);
+    qsortimp(keys, data, j, b);
 };
 
 emit_frame() = void;

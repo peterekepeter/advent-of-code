@@ -1,4 +1,98 @@
 
+part1(x) = {
+    local data = get(x,0);
+    local n = get(x,1);
+    local parsed = parse_lines(data);
+    local dlist = distances(parsed,n);
+    local circuits = map(array(length(data)),(_,i) -> i);
+    local i=0;
+    loop (i=0, i<length(dlist), i=i+1)
+    {
+        local item = get(dlist, i);
+        local a = get(item, 0);
+        local b = get(item, 1);
+        local ca = get(circuits, a);
+        local cb = get(circuits, b);
+        if (ca == cb) {
+            continue;
+        }
+        loop (j=0, j<length(circuits), j=j+1)
+        {
+            if (get(circuits, j) == cb) {
+                 set(circuits, j, ca);
+            }
+        }
+    }
+    grouppedlists=make_groups(circuits);
+    return reduce(head(grouppedlists, 3), (acc,y) -> acc * length(y), 1);
+};
+
+part2(x) = {
+    local parsed = parse_lines(x);
+    local l = length(parsed);
+    local dlist = distances_all(parsed);
+    local circuits = map(array(l),(_,i) -> i);
+    local i=0;
+    loop (i=0, i<length(dlist), i=i+1)
+    {
+        local item = get(dlist, i);
+        local a = get(item, 0);
+        local b = get(item, 1);
+        local ca = get(circuits, a);
+        local cb = get(circuits, b);
+        if (ca == cb) {
+            continue;
+        }
+        local count_same = 0;
+        loop (j=0, j<length(circuits), j=j+1)
+        {
+            if (get(circuits, j) == cb) {
+                 set(circuits, j, ca);
+            }
+            if (get(circuits, j) == ca) {
+                count_same = count_same + 1;
+            }
+        }
+        if (count_same == l)
+        {
+            return get(get(parsed,a),0) * get(get(parsed,b),0);
+        }
+    }
+    grouppedlists=make_groups(circuits);
+    print_list(grouppedlists);
+    return reduce(head(grouppedlists, 3), (acc,y) -> acc * length(y), 1);
+};
+
+make_groups(circuits) = {
+    local groups = {};
+    local i=0;
+    loop (i=0, i<length(circuits), i=i+1)
+    {
+        local key = string(get(circuits,i));
+        if (get(groups, key) == void) {
+            set(groups, key, [i]);
+        }
+        else {
+            local merged = get(groups, key) + [i];
+            set(groups, key, merged);
+        }
+    }
+    // turn groups into list and sort
+    local grouppedlists=[];
+    local props = properties(groups);
+    local i=0;
+    loop (i=0, i<length(props), i=i+1)
+    {
+        local prop = get(props,i);
+        local item = get(groups, prop);
+        grouppedlists = grouppedlists + [item];
+    }
+    grouppedlists = sorted(grouppedlists, x->(1-length(x)));
+    return grouppedlists;
+};
+
+print_list(x) = foreach(x,(y,i) -> view("at", i, "is", y));
+
 parse_lines(x) = map(x, parse_line);
 
 parse_line(x) = map(parse_split_tokens(x), to_integer);
@@ -7,29 +101,30 @@ parse_split_tokens(x) = split(x, ",");
 
 to_integer(x) = integer(x);
 
-distances(data,n) = {
-    view("data",data);
-    view(n,type(n));
-    local result=array(n);
+distances(data, n) = head(distances_all(data), n);
+
+distances_all(data) = {
     local i=0;
     local j=0;
     local l=length(data);
     local count = 0;
-    local worstd = 0;
+    local results = array((l*(l-1))/2);
     loop (i=0,i<l,i=i+1)
     {
         loop (j=i+1,j<l,j=j+1)
         {
             local dist=vdist(get(data,i),get(data,j));
-            if (count<n) {
-                set(result,count,[i,j,dist]);
-                count = count+1;
-            }
+            set(results,count,[i,j,dist]);
+            count=count+1;
         }
     }
-    view(get(result,0));
-    return result;
+    local out = sorted(results, x->get(x,2));
+    return out;
 };
+
+result_dist(item) = get(item,2);
+
+result_dist_assign(item, newdist) = set(item,2,newdist);
 
 vdist(a,b) = {
     local l=length(a);
@@ -43,11 +138,26 @@ vdist(a,b) = {
     return acc;
 };
 
-test_distances(x) = distances(get(x,0), get(x,1));
+test_distances(x) = distances(parse_lines(get(x,0)), get(x,1));
 
 cases = [
     { fn: parse_line, in: "1,2,3", out: [1,2,3] },
     { fn: parse_lines, in: ["1,2,3","4,5,6"], out:[[1,2,3],[4,5,6]] },
     { fn: test_distances, in: [["1,0,0","5,0,0"], 1], out: [[0,1,16]] },
+    { fn: test_distances, in: [["1","7","9"],1], out:[[1,2,4]] },
+    { fn: test_distances, in: [["1","9","2","3"],2], out:[[0,2,1],[2,3,1]] },
+    {
+        fn: test_distances,
+        in: [["1","2","4","5"],3],
+        out:[[2,3,1],[0,1,1],[1,2,4]],
+    },
+    {
+        fn: test_distances,
+        in: [["1","2","4","5","99","1100"],3],
+        out:[[2,3,1],[0,1,1],[1,2,4]],
+    },
+    { fn: sorted, in:[1,2,9,8,7,3,4,5,6], out:[1,2,3,4,5,6,7,8,9] },
+    { fn: part1, in:[["1","2","3"],2], out: 3 },
+    { fn: part1, in:[["1","2","4","5"],3], out: 4},
+    { fn: part2, in:["1","2","4","5","6","7","8"], out: 2*4 },
 ];
-
