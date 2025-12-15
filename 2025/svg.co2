@@ -1,0 +1,15 @@
+
+svg(points) = {
+    print("<svg viewBox=\"0 0 100000 100000\" xmlns='http://www.w3.org/2000/svg'>\n");
+    print("<polyline points='");
+    //print("0,0 50,150 100,75 150,50 200,140 250,140");
+    foreach(points, p -> {
+        // view(p);
+        print(string(get(p,0))+","+string(get(p,1))+" ");
+    });
+    print("'\n");
+    print("style='fill:pink;stroke:green;stroke-width:90' />\n");
+    print("</svg>\n");
+};
+
+svg(parse_lines(puzzle_input));
