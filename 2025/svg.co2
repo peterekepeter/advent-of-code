@@ -9,7 +9,12 @@ svg(points) = {
     });
     print("'\n");
     print("style='fill:pink;stroke:green;stroke-width:90' />\n");
-    local largest = find_largest(points);
+    svg_render_rect(find_largest(points));
+    svg_render_rect(find_largest_2(points));
+    print("</svg>\n");
+};
+
+svg_render_rect(largest) = {
     local x0=get(largest.p0,0);
     local y0=get(largest.p0,1);
     local x1=get(largest.p1,0);
@@ -20,7 +25,6 @@ svg(points) = {
     print(string(x1)+","+string(y1)+ " ");
     print(string(x0)+","+string(y1)+ " ");
     print("' style='fill:none;stroke:blue;stroke-width:90' />\n");
-    print("</svg>\n");
 };
 
 svg(parse_lines(puzzle_input));
