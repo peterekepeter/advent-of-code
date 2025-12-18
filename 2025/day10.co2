@@ -1,0 +1,110 @@
+
+part1(x) = sum(x.map(parse_line).map(solve));
+
+sum(x) = reduce(x, (acc, y) -> acc + y, 0);
+
+parse_line(x) = x.split(" ").parse_line_parts();
+
+parse_line_parts(x) = {
+    local pattern = x.get(0).parse_lights();
+    return {
+        lights: pattern,
+        buttons: x.unwrap().map(y -> y.parse_numbers(). nums_to_bits(pattern.length())),
+        joltage: x.get(x.length()-1).parse_numbers(),
+    };
+};
+
+unwrap(x) = x.subseq(x.length()-2,1);
+
+parse_lights(x) = unwrap(x).mapb(is_on_char);
+
+CHAR_ON = "#".get(0);
+
+is_on_char(x) = x == CHAR_ON;
+
+parse_numbers(x) = unwrap(x).split(",").map(to_integer);
+
+to_integer(x) = integer(x);
+
+solve(problem) = {
+    local lights = problem.get("lights");
+    local buttons = problem.get("buttons");
+    local l = buttons.length();
+    view(lights);
+    local sequence = [];
+    local applied = lights;
+    loop (applied.popcount() != 0) {
+        sequence = next_iter(sequence, l);
+        applied = sequence.reduce((acc, i) -> xor(acc, buttons.get(i)), lights);
+        view(lights, sequence, applied);
+    }
+    return sequence.length();
+};
+
+nums_to_bits(list, count) = {
+    local result = b"0"*count;
+    local l = list.length();
+    local i = 0;
+    loop (i<l, i=i+1) {
+        local num = list.get(i);
+        result.set(num, TRUE);
+    }
+    return result;
+};
+
+mapb(x,fn) = {
+    local l = x.length();
+    local result = b"0"*l;
+    local i=0;
+    loop (i=0, i<l, i=i+1)
+    {
+        result.set(i, fn(x.get(i)));
+    }
+    return result;
+};
+
+next_iter(list, count) = {
+    local i=0;
+    local l=list.length();
+    loop (i<l,i=i+1)
+    {
+        local value = list.get(i) + 1;
+        if (value >= count)
+        {
+            value = i;
+            list.set(i, value);
+        }
+        else
+        {
+            list.set(i, value);
+            break;
+        }
+    }
+    if (i==l) {
+        list = list + [i];
+    }
+    return list;
+};
+
+test_nums_to_bits(x) = nums_to_bits(x.get(0), x.get(1));
+
+test_next_iter(x) = next_iter(x.get(0), x.get(1));
+
+cases = [
+    { fn: unwrap, in: "[.#]", out: ".#" },
+    { fn: parse_lights, in: "[.#]", out: b"01" },
+    { fn: parse_numbers, in: "(1,2)", out:[1,2] },
+    { fn: parse_numbers, in: "{9,7,3}", out:[9,7,3] },
+    {
+        fn: parse_line, in: "[#..] (1,2) (0) {4,5}",
+        out: { lights: b"100", buttons: [b"011", b"100"], joltage: [4,5] },
+    },
+    { fn: test_nums_to_bits, in:[[1],3], out:b"010" },
+   // { fn: test_next_iter, in: [[0],2], out: [1] },
+   // { fn: test_next_iter, in: [[1,0],2], out: [0,1] },
+   // { fn: test_next_iter, in: [[],2], out: [0] },
+   // { fn: test_next_iter, in: [[1,1],2], out: [0,0,0] },
+    { fn: part1, in: ["[#] (0) {0}"], out: 1 },
+    { fn: part1, in: ["[.] (0) {0}"], out: 0 },
+];
+

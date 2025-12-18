@@ -65,6 +65,10 @@ equals = function(a, b){
         }
         return TRUE;
     }
+    if (ta == "binseq")
+    {
+        return popcount(xor(a,b)) == 0;
+    }
     return a == b;
 };
 
